@@ -464,6 +464,7 @@
     <ClCompile Include="StyleLexers\styleLexCSV.c" />
     <ClCompile Include="StyleLexers\styleLexD.c" />
     <ClCompile Include="StyleLexers\styleLexDIFF.c" />
+    <ClCompile Include="StyleLexers\styleLexFortran.c" />
     <ClCompile Include="StyleLexers\styleLexGo.c" />
     <ClCompile Include="StyleLexers\styleLexHTML.c" />
     <ClCompile Include="StyleLexers\styleLexINNO.c" />

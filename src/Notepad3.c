@@ -4571,6 +4571,9 @@ LRESULT MsgCommand(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
           case SCLEX_MATLAB:
             EditToggleLineComments(Globals.hwndEdit, L"%", true);
             break;
+          case SCLEX_FORTRAN:
+            EditToggleLineComments(Globals.hwndEdit, L"!", true);
+            break;
           // ------------------
           case SCLEX_NULL:
           case SCLEX_CSS:
@@ -4628,6 +4631,7 @@ LRESULT MsgCommand(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
           case SCLEX_CMAKE:
           case SCLEX_CONF:
           case SCLEX_DIFF:
+          case SCLEX_FORTRAN:
           case SCLEX_JSON:
           case SCLEX_LATEX:
           case SCLEX_MAKEFILE:

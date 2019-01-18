@@ -71,6 +71,7 @@ static PEDITLEXER g_pLexArray[NUMLEXERS] =
   &lexCSV,           // CSV Prism Color Lexer
   &lexD,             // D Source Code
   &lexDIFF,          // Diff Files
+  &lexFortran,       // Fortran Source Code
   &lexGo,            // Go Source Code
   &lexINNO,          // Inno Setup Script
   &lexJAVA,          // Java Source Code

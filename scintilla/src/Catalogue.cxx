@@ -104,7 +104,7 @@ int Scintilla_LinkLexers() {
 	//LINK_LEXER(lmF77);
 	//LINK_LEXER(lmFlagShip);
 	//LINK_LEXER(lmForth);
-	//LINK_LEXER(lmFortran);
+	LINK_LEXER(lmFortran);
 	//LINK_LEXER(lmFreeBasic);
 	//LINK_LEXER(lmGAP);
 	//LINK_LEXER(lmGui4Cli);

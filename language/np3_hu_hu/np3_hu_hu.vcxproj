@@ -22,8 +22,8 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{82BD93B4-0306-4DDC-87F6-84B906DBAA77}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>np3engb</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <RootNamespace>np3huhu</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -114,8 +114,10 @@
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(TargetDir)..\hu-HU"
-        "$(UCRTContentRoot)bin\$(WindowsTargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -q "$(SolutionDir)language\DoReverseMuiLoc.rcconfig" -v 2 -x 0x040E -g 0x0409 "$(TargetDir)$(TargetFileName)" "$(TargetDir)$(TargetFileName).discard" "$(TargetDir)..\hu-HU\np3lng.dll.mui"
-        "$(UCRTContentRoot)bin\$(WindowsTargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -c "$(TargetDir)..\np3lng.dll" -e "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        if exist "$(TargetDir)..\hu-HU\np3lng.dll.mui" del /f /q "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        if exist "$(TargetDir)$(TargetFileName).discard" del /f /q "$(TargetDir)$(TargetFileName).discard"
+        "$(UCRTContentRoot)bin\$(TargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -q "$(ProjectDir)..\DoReverseMuiLoc.rcconfig" -v 2 -x 0x040E -g 0x0409 "$(TargetDir)$(TargetFileName)" "$(TargetDir)$(TargetFileName).discard" "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        "$(UCRTContentRoot)bin\$(TargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -c "$(TargetDir)..\np3lng.dll" -e "$(TargetDir)..\hu-HU\np3lng.dll.mui"
       </Command>
       <Message>MUI Split</Message>
     </PostBuildEvent>
@@ -140,8 +142,10 @@
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(TargetDir)..\hu-HU"
-        "$(UCRTContentRoot)bin\$(WindowsTargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -q "$(SolutionDir)language\DoReverseMuiLoc.rcconfig" -v 2 -x 0x040E -g 0x0409 "$(TargetDir)$(TargetFileName)" "$(TargetDir)$(TargetFileName).discard" "$(TargetDir)..\hu-HU\np3lng.dll.mui"
-        "$(UCRTContentRoot)bin\$(WindowsTargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -c "$(TargetDir)..\np3lng.dll" -e "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        if exist "$(TargetDir)..\hu-HU\np3lng.dll.mui" del /f /q "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        if exist "$(TargetDir)$(TargetFileName).discard" del /f /q "$(TargetDir)$(TargetFileName).discard"
+        "$(UCRTContentRoot)bin\$(TargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -q "$(ProjectDir)..\DoReverseMuiLoc.rcconfig" -v 2 -x 0x040E -g 0x0409 "$(TargetDir)$(TargetFileName)" "$(TargetDir)$(TargetFileName).discard" "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        "$(UCRTContentRoot)bin\$(TargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -c "$(TargetDir)..\np3lng.dll" -e "$(TargetDir)..\hu-HU\np3lng.dll.mui"
       </Command>
       <Message>MUI Split</Message>
     </PostBuildEvent>
@@ -172,8 +176,10 @@
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(TargetDir)..\hu-HU"
-        "$(UCRTContentRoot)bin\$(WindowsTargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -q "$(SolutionDir)language\DoReverseMuiLoc.rcconfig" -v 2 -x 0x040E -g 0x0409 "$(TargetDir)$(TargetFileName)" "$(TargetDir)$(TargetFileName).discard" "$(TargetDir)..\hu-HU\np3lng.dll.mui"
-        "$(UCRTContentRoot)bin\$(WindowsTargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -c "$(TargetDir)..\np3lng.dll" -e "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        if exist "$(TargetDir)..\hu-HU\np3lng.dll.mui" del /f /q "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        if exist "$(TargetDir)$(TargetFileName).discard" del /f /q "$(TargetDir)$(TargetFileName).discard"
+        "$(UCRTContentRoot)bin\$(TargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -q "$(ProjectDir)..\DoReverseMuiLoc.rcconfig" -v 2 -x 0x040E -g 0x0409 "$(TargetDir)$(TargetFileName)" "$(TargetDir)$(TargetFileName).discard" "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        "$(UCRTContentRoot)bin\$(TargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -c "$(TargetDir)..\np3lng.dll" -e "$(TargetDir)..\hu-HU\np3lng.dll.mui"
       </Command>
       <Message>MUI Split</Message>
     </PostBuildEvent>
@@ -204,8 +210,10 @@
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(TargetDir)..\hu-HU"
-        "$(UCRTContentRoot)bin\$(WindowsTargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -q "$(SolutionDir)language\DoReverseMuiLoc.rcconfig" -v 2 -x 0x040E -g 0x0409 "$(TargetDir)$(TargetFileName)" "$(TargetDir)$(TargetFileName).discard" "$(TargetDir)..\hu-HU\np3lng.dll.mui"
-        "$(UCRTContentRoot)bin\$(WindowsTargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -c "$(TargetDir)..\np3lng.dll" -e "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        if exist "$(TargetDir)..\hu-HU\np3lng.dll.mui" del /f /q "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        if exist "$(TargetDir)$(TargetFileName).discard" del /f /q "$(TargetDir)$(TargetFileName).discard"
+        "$(UCRTContentRoot)bin\$(TargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -q "$(ProjectDir)..\DoReverseMuiLoc.rcconfig" -v 2 -x 0x040E -g 0x0409 "$(TargetDir)$(TargetFileName)" "$(TargetDir)$(TargetFileName).discard" "$(TargetDir)..\hu-HU\np3lng.dll.mui"
+        "$(UCRTContentRoot)bin\$(TargetPlatformVersion)\$(PlatformShortName)\muirct.exe" -c "$(TargetDir)..\np3lng.dll" -e "$(TargetDir)..\hu-HU\np3lng.dll.mui"
       </Command>
       <Message>MUI Split</Message>
     </PostBuildEvent>

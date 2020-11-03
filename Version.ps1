@@ -23,6 +23,7 @@ function DebugOutput($msg)
 {
 	#~return ## disabled debug output
 	if ($msg -ne $null) { 
+      	Write-Host ""
 		Write-Host "$msg"
 	}
 }
@@ -58,11 +59,17 @@ try
 		$Build = $Build + 1
 		# locally: we have no commit ID, create an arificial one
 		$CommitID = [string](Get-Content "Versions\commit_id.txt")
+		if (!$CommitID) { $CommitID = "---" }
 		if ($CommitID -eq "computername") {
-			$CommitID = ([string]($env:computername)).substring(0,8).ToLower()
+            $length = ([string]($env:computername)).length
+			$CommitID = ([string]($env:computername)).substring(0,[math]::min($length,8)).ToLower()
 		}
 		else {
-			$CommitID = $CommitID.substring(0,8)
+			if (!$CommitID) { $CommitID = "---" }
+			$CommitID = $CommitID -replace '"', ''
+			$CommitID = $CommitID -replace "'", ''
+		    $length = $CommitID.length
+			$CommitID = $CommitID.substring(0,[math]::min($length,8))
 		}
 	}
 	if (!$CommitID) { $CommitID = "---" }
@@ -121,6 +128,7 @@ finally
 {
 	[Environment]::SetEnvironmentVariable("LASTEXITCODE", $LastExitCode, "User")
 	$host.SetShouldExit($LastExitCode)
+	Write-Host ""
 	Write-Host "VersionPatching: Done! Elapsed time: $($stopwatch.Elapsed)."
 	Exit $LastExitCode
 }

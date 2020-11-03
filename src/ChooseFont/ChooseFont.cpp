@@ -8,6 +8,7 @@
 //
 //----------------------------------------------------------------------------
 
+#include <shlwapi.h>
 
 #include "ChooseFont.h"
 #include "FontEnumeration.h"
@@ -57,6 +58,7 @@ public:
 
   HRESULT GetTextFormat(IDWriteTextFormat** textFormat);
   HRESULT GetTextFormat(IDWriteTextFormat* textFormatIn, IDWriteTextFormat** textFormatOut);
+  void    GetFontStyle(LPWSTR fontStyle, size_t cchMax);
 
 private:
 
@@ -68,6 +70,7 @@ private:
   IDWriteFontCollection*  m_fontCollection;
   IDWriteTextFormat*      m_currentTextFormat;
   IDWriteTextFormat*      m_renderTextFormat;
+  WCHAR                   m_fontStyle[LF_FULLFACESIZE];
 
   HRESULT OnFontFamilySelect();
   HRESULT OnFontFaceSelect();
@@ -85,6 +88,12 @@ private:
   void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify);
   void OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT* lpDrawItem);
 };
+
+
+void   ChooseFontDialog::GetFontStyle(LPWSTR fontStyle, size_t cchMax)
+{
+  StringCchCopy(fontStyle, cchMax, m_fontStyle);
+}
 
 
 /******************************************************************
@@ -112,6 +121,7 @@ ChooseFontDialog::ChooseFontDialog(HWND hParent, const WCHAR* localeName, const 
     //GetUserDefaultLocaleName(&m_localeName[0], COUNTOF(m_localeName));
     GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SNAME, &m_localeName[0], _ARRAYSIZE(m_localeName));
   }
+  StringCchCopy(m_fontStyle, _ARRAYSIZE(m_fontStyle), L"");
 }
 
 
@@ -139,6 +149,69 @@ ChooseFontDialog::~ChooseFontDialog()
 *                                                                 *
 ******************************************************************/
 
+static DWRITE_FONT_WEIGHT GetFontWeightValue(LONG fontWeight)
+{
+  if (fontWeight < 150) {
+    return DWRITE_FONT_WEIGHT_THIN;
+  }
+  else if (fontWeight < 250) {
+    return DWRITE_FONT_WEIGHT_EXTRA_LIGHT; // == DWRITE_FONT_WEIGHT_ULTRA_LIGHT
+  }
+  else if (fontWeight < 325) {
+    return DWRITE_FONT_WEIGHT_LIGHT;
+  }
+  else if (fontWeight < 375) {
+    return DWRITE_FONT_WEIGHT_SEMI_LIGHT;
+  }
+  else if (fontWeight < 450) {
+    return DWRITE_FONT_WEIGHT_NORMAL; // == DWRITE_FONT_WEIGHT_REGULAR
+  }
+  else if (fontWeight < 550) {
+    return DWRITE_FONT_WEIGHT_MEDIUM;
+  }
+  else if (fontWeight < 650) {
+    return DWRITE_FONT_WEIGHT_SEMI_BOLD; // == DWRITE_FONT_WEIGHT_DEMI_BOLD
+  }
+  else if (fontWeight < 750) {
+    return DWRITE_FONT_WEIGHT_BOLD;
+  }
+  else if (fontWeight < 850) {
+    return DWRITE_FONT_WEIGHT_EXTRA_BOLD; // == DWRITE_FONT_WEIGHT_ULTRA_BOLD
+  }
+  else if (fontWeight < 950) {
+    return DWRITE_FONT_WEIGHT_HEAVY;  // == DWRITE_FONT_WEIGHT_BLACK
+  }
+  return DWRITE_FONT_WEIGHT_ULTRA_BLACK; // == DWRITE_FONT_WEIGHT_EXTRA_BLACK
+}
+
+
+static DWRITE_FONT_STYLE GetFontStyleValue(LPCWSTR const fontStyle, bool bItalic)
+{
+  if (StrStrI(fontStyle, L"oblique")) {
+    return DWRITE_FONT_STYLE_OBLIQUE;
+  }
+  else if (StrStrI(fontStyle, L"italic") || bItalic) {
+    return DWRITE_FONT_STYLE_ITALIC;
+  }
+  return DWRITE_FONT_STYLE_NORMAL;
+}
+
+
+static DWRITE_FONT_STRETCH GetFontStrechValue(LPCWSTR const fontStyle)
+{
+  if (StrStrI(fontStyle, L"condensed")) {
+    return DWRITE_FONT_STRETCH_CONDENSED;
+  }
+  else if (StrStrI(fontStyle, L"extended")) {
+    return DWRITE_FONT_STRETCH_EXPANDED;
+  }
+  else if (StrStrI(fontStyle, L"expanded")) {
+    return DWRITE_FONT_STRETCH_EXPANDED;
+  }
+  return DWRITE_FONT_STRETCH_NORMAL;
+}
+
+
 HRESULT ChooseFontDialog::GetTextFormat(IDWriteTextFormat** textFormat)
 {
   *textFormat = nullptr;
@@ -152,11 +225,12 @@ HRESULT ChooseFontDialog::GetTextFormat(IDWriteTextFormat** textFormat)
     SafeRelease(&m_currentTextFormat);
 
     const WCHAR* const fontFamilyName = m_chooseFontStruct->lpLogFont->lfFaceName;
+    const WCHAR* const fontStyleStrg = m_chooseFontStruct->lpszStyle;
     float const pointSize = static_cast<float>(m_chooseFontStruct->iPointSize) / 10.0f;
-    auto const fontWeight = static_cast<DWRITE_FONT_WEIGHT>(m_chooseFontStruct->lpLogFont->lfWeight); // TODO: mapping?
-    DWRITE_FONT_STYLE const fontStyle = (m_chooseFontStruct->lpLogFont->lfItalic ?
-                                         DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL);
-    DWRITE_FONT_STRETCH const fontStretch = DWRITE_FONT_STRETCH_NORMAL;
+
+    DWRITE_FONT_WEIGHT  const fontWeight  = GetFontWeightValue(m_chooseFontStruct->lpLogFont->lfWeight);
+    DWRITE_FONT_STYLE   const fontStyle   = GetFontStyleValue(fontStyleStrg, m_chooseFontStruct->lpLogFont->lfItalic);
+    DWRITE_FONT_STRETCH const fontStretch = GetFontStrechValue(fontStyleStrg);
 
     hr = g_dwrite->CreateTextFormat(
       fontFamilyName,
@@ -245,7 +319,7 @@ HRESULT ChooseFontDialog::OnFontFamilySelect()
   int currentSelection = ComboBox_GetCurSel(hwndFontFamilyNames);
 
   // Get the font family name
-  WCHAR fontFamilyName[100];
+  WCHAR fontFamilyName[128];
 
   UINT32 fontFamilyNameLength = ComboBox_GetLBTextLen(hwndFontFamilyNames, currentSelection) + 1;
   if (fontFamilyNameLength > _ARRAYSIZE(fontFamilyName))
@@ -260,9 +334,9 @@ HRESULT ChooseFontDialog::OnFontFamilySelect()
   std::vector<IDWriteFont*>   fonts;
 
   // Get the font variants for this family
-  if (currentSelection != CB_ERR)
+  if (currentSelection != CB_ERR) {
     hr = GetFonts(m_fontCollection, fontFamilyName, fonts);
-
+  }
   // Initialize the face name list
   std::vector<FontFaceInfo> fontFaceInfo;
   if (SUCCEEDED(hr)) {
@@ -372,20 +446,33 @@ HRESULT ChooseFontDialog::OnFontFamilyNameEdit(HWND hwndFontFamilies)
   int   editSelectionEnd = HIWORD(editSelection);
 
   // Get the text in the edit portion of the combo
-  WCHAR fontFamilyName[100];
-  ComboBox_GetText(hwndFontFamilies, &fontFamilyName[0], _ARRAYSIZE(fontFamilyName));
+  WCHAR fontFullName[128];
+  ComboBox_GetText(hwndFontFamilies, &fontFullName[0], _ARRAYSIZE(fontFullName));
 
   // Try to find an exact match (case-insensitive)
-  int matchingFontFamily = ComboBox_FindStringExact(hwndFontFamilies, -1, fontFamilyName);
+  WCHAR fontFamilyName[128];
+  StringCchCopyW(fontFamilyName, ARRAYSIZE(fontFamilyName), fontFullName);
+
+  int matchingFontFamily = CB_ERR;
+  PTSTR pSpc = NULL;
+  do {
+    //matchingFontFamily = ComboBox_FindStringExact(hwndFontFamilies, -1, fontFullName);
+    matchingFontFamily = ComboBox_FindString(hwndFontFamilies, -1, fontFamilyName);
+    if (matchingFontFamily == CB_ERR) { 
+      pSpc = StrRChrIW(fontFamilyName, NULL, L' ');
+      if (pSpc != NULL) { *pSpc = L'\0'; }
+    }
+  } while ((matchingFontFamily == CB_ERR) && (pSpc != NULL));
+  
   bool usedAltMatch = false;
 
   if (matchingFontFamily == CB_ERR) {
     // If a match isn't found, scan all for alternate forms in the font
     // collection.
     IDWriteFontFamily* fontFamily = nullptr;
-    hr = GetFontFamily(m_fontCollection, fontFamilyName, &fontFamily);
+    hr = GetFontFamily(m_fontCollection, fontFullName, &fontFamily);
 
-    if (hr == S_OK) {
+    if (SUCCEEDED(hr)) {
       // If a match is found, get the family name localized to the locale
       // we're using in the combo box and match against that.
       usedAltMatch = true;
@@ -406,15 +493,16 @@ HRESULT ChooseFontDialog::OnFontFamilyNameEdit(HWND hwndFontFamilies)
   }
 
   // Process the match, if any
-  if (SUCCEEDED(hr) && matchingFontFamily != CB_ERR) {
+  if (SUCCEEDED(hr) && matchingFontFamily != CB_ERR)
+  {
     ComboBox_SetCurSel(hwndFontFamilies, matchingFontFamily);
 
     // SetCurSel will update the edit text to match the text of the 
     // selected item.  If we matched against an alternate name put that
     // name back.
-    if (usedAltMatch)
-      ComboBox_SetText(hwndFontFamilies, fontFamilyName);
-
+    if (usedAltMatch) {
+      ComboBox_SetText(hwndFontFamilies, fontFullName);
+    }
     // Reset the edit selection to what is was before SetCurSel.
     ComboBox_SetEditSel(hwndFontFamilies, editSelectionBegin, editSelectionEnd);
 
@@ -530,6 +618,9 @@ HRESULT ChooseFontDialog::DrawSampleText(HDC sampleDC)
     int selectedFontFace = ComboBox_GetCurSel(hwndFontFaces);
     auto packedAttributes = static_cast<ULONG>(ComboBox_GetItemData(hwndFontFaces, selectedFontFace));
 
+    // Get the full font style
+    ComboBox_GetText(hwndFontFaces, m_fontStyle, _ARRAYSIZE(m_fontStyle));
+
     // Get the font size
     WCHAR fontSizeText[100];
     GetWindowText(hwndFontSizes, &fontSizeText[0], _ARRAYSIZE(fontSizeText));
@@ -537,7 +628,7 @@ HRESULT ChooseFontDialog::DrawSampleText(HDC sampleDC)
     auto pointSize = static_cast<float>(wcstod(fontSizeText, nullptr));
     if (pointSize <= 0.0f) { pointSize = 10.0f; }
 
-    FontFaceInfo fontFaceInfo(fontFamilyName, packedAttributes);
+    FontFaceInfo const fontFaceInfo(fontFamilyName, packedAttributes);
 
     // Recreate current text format object
     SafeRelease(&m_currentTextFormat);
@@ -666,7 +757,7 @@ BOOL ChooseFontDialog::OnInitDialog(HWND dialog, HWND hwndFocus, LPARAM lParam)
 {
   m_dialog = dialog;
 
-  if (Globals.hDlgIcon) { SendMessage(dialog, WM_SETICON, ICON_SMALL, (LPARAM)Globals.hDlgIcon); }
+  SET_NP3_DLG_ICON_SMALL(dialog);
 
   HWND hwndFamilyNames = GetDlgItem(dialog, IDC_FONT_FAMILY_NAMES);
   HWND hwndSizes = GetDlgItem(dialog, IDC_FONT_SIZE);
@@ -698,7 +789,7 @@ BOOL ChooseFontDialog::OnInitDialog(HWND dialog, HWND hwndFocus, LPARAM lParam)
   }
 
   // Select the current size
-  FLOAT  fCurFontSize = static_cast<FLOAT>(roundf(m_currentTextFormat->GetFontSize() * 10.0f) / 10.0f);
+  float fCurFontSize = roundf(m_currentTextFormat->GetFontSize() * 10.0f) / 10.0f;
   StringCchPrintf(sizeName, _ARRAYSIZE(sizeName), L"%.3G", fCurFontSize);
 
   SetWindowText(hwndSizes, sizeName);
@@ -714,9 +805,10 @@ BOOL ChooseFontDialog::OnInitDialog(HWND dialog, HWND hwndFocus, LPARAM lParam)
     selectedFontFamily = ComboBox_SelectString(hwndFamilyNames, -1, fontFamilyName.c_str());
   }
 
-  if (selectedFontFamily == CB_ERR)
+  if (selectedFontFamily == CB_ERR) {
     SetWindowText(hwndFamilyNames, fontFamilyName.c_str());
-
+    OnFontFamilyNameEdit(hwndFamilyNames);
+  }
   OnFontFamilySelect();
 
   CenterDlgInParent(m_dialog);
@@ -780,6 +872,7 @@ void ChooseFontDialog::OnDrawItem(HWND hwnd, const DRAWITEMSTRUCT* lpDrawItem)
 
 static void  SetChosenFontFromTextFormat(
   IDWriteTextFormat* textFormat,
+  LPCWSTR fontStyleStrg,
   LPCHOOSEFONT lpCF, const DPI_T dpi)
 {
   if (textFormat != nullptr) {
@@ -787,22 +880,28 @@ static void  SetChosenFontFromTextFormat(
     HDC hdc = GetDC(lpCF->hwndOwner);
 
     textFormat->GetFontFamilyName(&fontFamilyName[0], _ARRAYSIZE(fontFamilyName));
-    float const pointSize = textFormat->GetFontSize();
+    float const fFontSize = textFormat->GetFontSize();
     DWRITE_FONT_WEIGHT const fontWeight = textFormat->GetFontWeight();
     DWRITE_FONT_STYLE const fontStyle = textFormat->GetFontStyle();
+    //DWRITE_FONT_STRETCH const fontStretch = textFormat->GetFontStretch();
 
-    StringCchCopy(lpCF->lpLogFont->lfFaceName, LF_FACESIZE, fontFamilyName);
-    lpCF->lpLogFont->lfHeight = -MulDiv(static_cast<int>(lround(pointSize)), GetDeviceCaps(lpCF->hDC, LOGPIXELSY), 72);
-    lpCF->iPointSize = static_cast<INT>(lroundf(pointSize * 10.0f));
-    lpCF->lpLogFont->lfWeight = static_cast<LONG>(fontWeight);
-    lpCF->lpLogFont->lfItalic = static_cast<BYTE>((((fontStyle == DWRITE_FONT_STYLE_ITALIC) ||
-      (fontStyle == DWRITE_FONT_STYLE_OBLIQUE)) ? TRUE : FALSE));
-    lpCF->lpLogFont->lfQuality = static_cast<BYTE>(CLEARTYPE_QUALITY);
+    // copy font family name here, will be corrected on post processing step
+    StringCchCopy(lpCF->lpLogFont->lfFaceName, LF_FACESIZE, fontFamilyName); // family name only here
+
+    lpCF->iPointSize = static_cast<INT>(lroundf(fFontSize * 10.0f));
+    lpCF->lpLogFont->lfHeight = -MulDiv(static_cast<int>(lround(fFontSize * SC_FONT_SIZE_MULTIPLIER)), 
+                                        GetDeviceCaps(hdc, LOGPIXELSY), 72 * SC_FONT_SIZE_MULTIPLIER);
+    lpCF->lpLogFont->lfWeight = fontWeight;
+    lpCF->lpLogFont->lfItalic = static_cast<BYTE>((fontStyle != DWRITE_FONT_STYLE_NORMAL) ? TRUE : FALSE);
+    //~lpCF->lpLogFont->lfQuality = static_cast<BYTE>(CLEARTYPE_QUALITY);
+
+    StringCchCopy(lpCF->lpszStyle, LF_FULLFACESIZE, fontStyleStrg ? fontStyleStrg : L"");
 
     ReleaseDC(lpCF->hwndOwner, hdc);
   }
 }
 // ============================================================================
+
 
 extern "C" bool ChooseFontDirectWrite(HWND hwnd, const WCHAR* localeName, DPI_T dpi, LPCHOOSEFONT lpCFGDI)
 {
@@ -823,8 +922,10 @@ extern "C" bool ChooseFontDirectWrite(HWND hwnd, const WCHAR* localeName, DPI_T 
   IDWriteTextFormat* textFormatOut = nullptr;
   ChooseFontDialog chooseFont(hwnd, localeName, dpi, lpCFGDI);
   chooseFont.GetTextFormat(&textFormatOut);
+  WCHAR fontStyle[LF_FULLFACESIZE] = { L'\0' };
+  chooseFont.GetFontStyle(fontStyle, _ARRAYSIZE(fontStyle));
 
-  SetChosenFontFromTextFormat(textFormatOut, lpCFGDI, dpi);
+  SetChosenFontFromTextFormat(textFormatOut, fontStyle, lpCFGDI, dpi);
 
   SafeRelease(&textFormatOut);
   SafeRelease(&g_dwrite);

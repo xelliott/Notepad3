@@ -70,11 +70,11 @@ typedef struct _np2encoding {
 
 } NP2ENCODING;
 
-cpi_enc_t  Encoding_Current(cpi_enc_t iEncoding);            // getter/setter
-cpi_enc_t  Encoding_Forced(cpi_enc_t iEncoding);             // getter/setter
-cpi_enc_t  Encoding_SrcWeak(cpi_enc_t iSrcWeakEnc);          // getter/setter
-bool       Encoding_HasChanged(cpi_enc_t iOriginalEncoding); // query/setter
-           
+cpi_enc_t  Encoding_Current(cpi_enc_t iEncoding);         // getter/setter
+cpi_enc_t  Encoding_Forced(cpi_enc_t iEncoding);          // getter/setter
+cpi_enc_t  Encoding_SrcWeak(cpi_enc_t iSrcWeakEnc);       // getter/setter
+inline cpi_enc_t const Encoding_GetCurrent() { return Encoding_Current(CPI_GET); }
+
 void       Encoding_InitDefaults();
 int        Encoding_MapIniSetting(bool, int iSetting);
 
@@ -114,7 +114,7 @@ void Encoding_SetDefaultFlag(const cpi_enc_t iEncoding);
 const WCHAR* Encoding_GetLabel(const cpi_enc_t iEncoding);
 const char* Encoding_GetParseNames(const cpi_enc_t iEncoding);
 int Encoding_GetNameA(const cpi_enc_t iEncoding, char* buffer, size_t cch);
-int Encoding_GetNameW(const cpi_enc_t iEncoding, LPWSTR buffer, size_t cch);
+int Encoding_GetNameW(const cpi_enc_t iEncoding, LPWSTR buffer, size_t cwch);
 
 bool Has_UTF16_LE_BOM(const char* pBuf, size_t cnt);
 bool Has_UTF16_BE_BOM(const char* pBuf, size_t cnt);
@@ -141,7 +141,7 @@ void ChangeEncodingCodePage(const cpi_enc_t cpi, UINT newCP);
 
 inline bool Encoding_IsValidIdx(const cpi_enc_t cpi)
 {
-  return ((cpi >= 0) && (cpi < Encoding_CountOf()));
+  return ((cpi > CPI_NONE) && (cpi < Encoding_CountOf()));
 }
 
 // 932 Shift-JIS, 936 GBK, 949 UHC, 950 Big5, 951 Big5-hkscs, 1361 Johab
@@ -160,7 +160,7 @@ inline bool IsDBCSCodePage(UINT cp) {
 #define FV_ENCODING       64
 #define FV_MODE          128
 
-bool       FileVars_Init(const char* lpData, size_t cbData, LPFILEVARS lpfv);
+bool       FileVars_GetFromData(const char* lpData, size_t cbData, LPFILEVARS lpfv);
 bool       FileVars_Apply(LPFILEVARS lpfv);
 bool       FileVars_ParseInt(char* pszData, char* pszName, int* piValue);
 bool       FileVars_ParseStr(char* pszData, char* pszName, char* pszValue, int cchValue);
@@ -174,7 +174,6 @@ typedef struct _enc_det_t
 {
   cpi_enc_t Encoding; // final detection result
   // statistic:
-  char encodingStrg[64];
   cpi_enc_t forcedEncoding;
   cpi_enc_t fileVarEncoding;
   cpi_enc_t analyzedEncoding;
@@ -188,9 +187,11 @@ typedef struct _enc_det_t
   bool bIsUTF8Sig;
   bool bValidUTF8;
 
+  char encodingStrg[64];
+  
 } ENC_DET_T;
 
-#define INIT_ENC_DET_T  { CPI_NONE, "", CPI_NONE, CPI_NONE, CPI_NONE, CPI_NONE, 0.0f, false, false, false, false, false, false }
+#define INIT_ENC_DET_T  { CPI_NONE, CPI_NONE, CPI_NONE, CPI_NONE, CPI_NONE, 0.0f, false, false, false, false, false, false, "" }
 
 
 ENC_DET_T Encoding_DetectEncoding(LPWSTR pszFile, const char* lpData, const size_t cbData,

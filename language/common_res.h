@@ -1,6 +1,7 @@
 //{{NO_DEPENDENCIES}}
 // common language (MUI) defines
 //
+#pragma once
 #ifndef _COMMON_RES_H_
 #define _COMMON_RES_H_
 
@@ -40,6 +41,7 @@
 #define IDT_VIEW_CHASING_DOCTAIL        11026
 #define IDT_FILE_RECENT                 11027
 #define IDT_VIEW_PIN_ON_TOP             11028
+#define IDT_GREP_WIN_TOOL               11029
 
 #define IDS_MUI_APPTITLE                12005
 #define IDS_MUI_APPTITLE_ELEVATED       12006
@@ -61,29 +63,33 @@
 #define IDS_MUI_BACKSLASHHELP           12022
 #define IDS_MUI_REGEXPHELP              12023
 #define IDS_MUI_WILDCARDHELP            12024
+#define IDS_CLEAR_ALL                   12025
 
 #define IDS_MUI_ERR_LOADFILE            13000
 #define IDS_MUI_ERR_SAVEFILE            13001
 #define IDS_MUI_ERR_BROWSE              13002
-#define IDS_MUI_ERR_MRUDLG              13003
-#define IDS_MUI_ERR_CREATELINK          13004
-#define IDS_MUI_ERR_PREVWINDISABLED     13005
-#define IDS_MUI_ERR_ENCODINGNA          13006
-#define IDS_MUI_ERR_UNICODE             13007
-#define IDS_MUI_ERR_UNICODE2            13008
-#define IDS_MUI_ERR_DROP                13009
-#define IDS_MUI_ERR_ACCESSDENIED        13010
-#define IDS_MUI_ERR_ADMINEXE            13011
-#define IDS_MUI_ERR_BITMAP              13012
-#define IDS_MUI_ERR_ELEVATED_RIGHTS     13013
-#define IDS_MUI_WARN_LOAD_BIG_FILE      13014
-#define IDS_MUI_ERR_FILE_TOO_LARGE      13015
-#define IDS_MUI_WARN_UNKNOWN_EXT        13016
+#define IDS_MUI_ERR_GREPWIN             13003
+#define IDS_MUI_ERR_MRUDLG              13004
+#define IDS_MUI_ERR_CREATELINK          13005
+#define IDS_MUI_ERR_PREVWINDISABLED     13006
+#define IDS_MUI_ERR_ENCODINGNA          13007
+#define IDS_MUI_ERR_UNICODE             13008
+#define IDS_MUI_ERR_UNICODE2            13009
+#define IDS_MUI_ERR_DROP                13010
+#define IDS_MUI_ERR_ACCESSDENIED        13011
+#define IDS_MUI_ERR_ADMINEXE            13012
+#define IDS_MUI_ERR_BITMAP              13013
+#define IDS_MUI_ERR_ELEVATED_RIGHTS     13014
+#define IDS_MUI_WARN_LOAD_BIG_FILE      13015
+#define IDS_MUI_ERR_FILE_TOO_LARGE      13016
+#define IDS_MUI_WARN_UNKNOWN_EXT        13017
+#define IDS_MUI_ERR_DLG_FORMAT          13018
 // keep order (CRLF(0),  CR(1),  LF(2))
-#define IDS_MUI_EOLMODENAME_CRLF        13018
-#define IDS_MUI_EOLMODENAME_CR          13019
-#define IDS_MUI_EOLMODENAME_LF          13020
-#define IDS_MUI_INF_PRSVFILEMODTM       13021
+#define IDS_MUI_EOLMODENAME_CRLF        13020
+#define IDS_MUI_EOLMODENAME_CR          13021
+#define IDS_MUI_EOLMODENAME_LF          13022
+#define IDS_MUI_WARN_NORMALIZE_EOLS     13023
+#define IDS_MUI_INF_PRSVFILEMODTM       13024
 
 #define IDS_MUI_SELRECT                 14000
 #define IDS_MUI_BUFFERTOOSMALL          14001
@@ -106,6 +112,7 @@
 #define IDS_MUI_DROP_NO_FILE            14018
 #define IDS_MUI_SELMULTI                14019
 #define IDS_MUI_SELRECTORMULTI          14020
+#define IDS_MUI_INIFILE_READONLY        14021
 
 #define IDS_MUI_ASK_SAVE                15000
 #define IDS_MUI_ASK_REVERT              15001
@@ -149,6 +156,8 @@
 #define IDS_MUI_ABOUT_ACKNOWLEDGES      15039
 #define IDS_MUI_ABOUT_MORE              15040
 #define IDS_MUI_ABOUT_LICENSES          15041
+#define IDS_MUI_CLEAR_FIND_HISTORY      15042
+#define IDS_MUI_CLEAR_REPL_HISTORY      15043
 
 #define IDS_MUI_TRANSL_AUTHOR           15050
 #define IDS_MUI_ASSOCIATED_EXT          15051
@@ -164,15 +173,15 @@
 #define IDS_MUI_STATUSBAR_POSTFIXES     15061
 #define IDS_MUI_RELOADSETTINGS          15062
 #define IDS_MUI_RELOADCFGSEX            15063
+#define IDS_MUI_OUT_OFF_OCCMRK          15064
 
 #define IDR_MAINWND                     16000
-#define IDR_MAINWND48                   16001
-#define IDR_MAINWNDTB                   16002
-#define IDR_MAINWNDTBHOT                16003
-#define IDR_MAINWNDTBDIS                16004
-#define IDR_MAINWNDTB2                  16005
-#define IDR_MAINWNDTB2HOT               16006
-#define IDR_MAINWNDTB2DIS               16007
+#define IDR_MAINWNDTB                   16001
+#define IDR_MAINWNDTBHOT                16002
+#define IDR_MAINWNDTBDIS                16003
+#define IDR_MAINWNDTB2                  16004
+#define IDR_MAINWNDTB2HOT               16005
+#define IDR_MAINWNDTB2DIS               16006
 
 #define IDI_MUI_RUN                     16100
 #define IDI_MUI_STYLES                  16101
@@ -236,7 +245,6 @@
 #define IDC_FINDWORD                    18005
 #define IDC_FINDSTART                   18006
 #define IDC_FINDTRANSFORMBS             18007
-#define IDC_FINDAUTOESCCTRLCHR          18008
 #define IDC_FINDREGEXP                  18009
 #define IDC_DOT_MATCH_ALL               18010
 #define IDC_NOWRAP                      18011
@@ -348,6 +356,13 @@
 #define IDC_INDENT_SPC_MODX             18116
 #define IDC_ADDFAV_FILES                18117
 #define IDC_INFO_GROUPBOX               18118
+#define IDC_FIND_OVERLAPPING            18119
+#define IDC_MULTIEDGELINE               18120
+#define IDC_SHOWEDGELINE                18121
+#define IDC_BACKGRDCOLOR                18122
+#define IDC_CLEAR_LIST                  18123
+#define IDC_FINDESCCTRLCHR              18124
+#define IDC_REPLESCCTRLCHR              18125
 
 #define CMD_ESCAPE                      20000
 #define CMD_SHIFTESC                    20001
@@ -356,9 +371,9 @@
 #define CMD_SCROLLDOWN                  20004
 #define CMD_CTRLLEFT                    20005
 #define CMD_CTRLRIGHT                   20006
-//#define CMD_DELETEBACK                  20007
+#define CMD_DELETEBACK                  20007
 #define CMD_CTRLBACK                    20008
-//#define CMD_CLEAR                       20009
+#define CMD_CLEAR                       20009
 #define CMD_CTRLDEL                     20010
 #define CMD_CTRLTAB                     20011
 #define CMD_RECODEDEFAULT               20012
@@ -371,42 +386,46 @@
 #define CMD_LEXDEFAULT                  20019
 #define CMD_LEXHTML                     20020
 #define CMD_LEXXML                      20021
-#define CMD_TIMESTAMPS                  20022
-#define CMD_WEBACTION1                  20023
-#define CMD_WEBACTION2                  20024
-#define CMD_FINDNEXTSEL                 20025
-#define CMD_FINDPREVSEL                 20026
-#define CMD_INCLINELIMIT                20027
-#define CMD_DECLINELIMIT                20028
-#define CMD_STRINGIFY                   20029
-#define CMD_STRINGIFY2                  20030
-#define CMD_EMBRACE                     20031
-#define CMD_EMBRACE2                    20032
-#define CMD_EMBRACE3                    20033
-#define CMD_EMBRACE4                    20034
-#define CMD_INCREASENUM                 20035
-#define CMD_DECREASENUM                 20036
-#define CMD_TOGGLETITLE                 20037
-#define CMD_JUMP2SELSTART               20038
-#define CMD_JUMP2SELEND                 20039
-#define CMD_COPYPATHNAME                20040
-#define CMD_COPYWINPOS                  20041
-#define CMD_INITIALWINPOS               20042
-#define CMD_OPENINIFILE                 20043
-#define CMD_INSERTNEWLINE               20044
-#define CMD_OPEN_HYPERLINK              20045
-#define CMD_FOLDJUMPUP                  20046
-#define CMD_FOLDJUMPDOWN                20047
-#define CMD_FOLDCOLLAPSE                20048
-#define CMD_FOLDEXPAND                  20049
-#define CMD_TAB                         20050
-#define CMD_BACKTAB                     20051
-#define CMD_VK_INSERT                   20052
-#define CMD_FULLSCRWINPOS               20053
-#define CMD_DEFAULTWINPOS               20054
-#define CMD_SAVEASDEFWINPOS             20055
-#define CMD_CLEARSAVEDWINPOS            20056
-#define CMD_CHECK_INDENTATION           20057
+#define CMD_INSERT_TIMESTAMP            20022
+#define CMD_UPDATE_TIMESTAMPS           20023
+#define CMD_WEBACTION1                  20024
+#define CMD_WEBACTION2                  20025
+#define CMD_FINDNEXTSEL                 20026
+#define CMD_FINDPREVSEL                 20027
+#define CMD_INCLINELIMIT                20028
+#define CMD_DECLINELIMIT                20029
+#define CMD_STRINGIFY                   20030
+#define CMD_STRINGIFY2                  20031
+#define CMD_EMBRACE                     20032
+#define CMD_EMBRACE2                    20033
+#define CMD_EMBRACE3                    20034
+#define CMD_EMBRACE4                    20035
+#define CMD_INCREASENUM                 20036
+#define CMD_DECREASENUM                 20037
+#define CMD_TOGGLETITLE                 20038
+#define CMD_JUMP2SELSTART               20039
+#define CMD_JUMP2SELEND                 20040
+#define CMD_COPYPATHNAME                20041
+#define CMD_COPYWINPOS                  20042
+#define CMD_INITIALWINPOS               20043
+#define CMD_OPENINIFILE                 20044
+#define CMD_INSERTNEWLINE               20045
+#define CMD_OPEN_HYPERLINK              20046
+#define CMD_FOLDJUMPUP                  20047
+#define CMD_FOLDJUMPDOWN                20048
+#define CMD_FOLDCOLLAPSE                20049
+#define CMD_FOLDEXPAND                  20050
+#define CMD_TAB                         20051
+#define CMD_BACKTAB                     20052
+#define CMD_VK_INSERT                   20053
+#define CMD_FULLSCRWINPOS               20054
+#define CMD_DEFAULTWINPOS               20055
+#define CMD_SAVEASDEFWINPOS             20056
+#define CMD_CLEARSAVEDWINPOS            20057
+#define CMD_CHECK_INDENTATION           20058
+#define CMD_ARROW_UP                    20059
+#define CMD_ARROW_DOWN                  20060
+#define CMD_ENTER_RTURN                 20061
 
 #define IDS_MUI_MENU_LANGUAGE           34500
 #define IDS_MUI_LANG_EN_US              34501
@@ -415,19 +434,25 @@
 #define IDS_MUI_LANG_DE_DE              34504
 #define IDS_MUI_LANG_EN_GB              34505
 #define IDS_MUI_LANG_ES_ES              34506
-#define IDS_MUI_LANG_FR_FR              34507
-#define IDS_MUI_LANG_HU_HU              34508
-#define IDS_MUI_LANG_IT_IT              34509
-#define IDS_MUI_LANG_JP_JP              34510
-#define IDS_MUI_LANG_KO_KR              34511
-#define IDS_MUI_LANG_NL_NL              34512
-#define IDS_MUI_LANG_PL_PL              34513
-#define IDS_MUI_LANG_PT_BR              34514
-#define IDS_MUI_LANG_RU_RU              34515
-#define IDS_MUI_LANG_SK_SK              34516
-#define IDS_MUI_LANG_SV_SE              34517
-#define IDS_MUI_LANG_TR_TR              34518
-#define IDS_MUI_LANG_ZH_CN              34519
+#define IDS_MUI_LANG_ES_MX              34507
+#define IDS_MUI_LANG_FR_FR              34508
+#define IDS_MUI_LANG_HI_IN              34509
+#define IDS_MUI_LANG_HU_HU              34510
+#define IDS_MUI_LANG_ID_ID              34511
+#define IDS_MUI_LANG_IT_IT              34512
+#define IDS_MUI_LANG_JP_JP              34513
+#define IDS_MUI_LANG_KO_KR              34514
+#define IDS_MUI_LANG_NL_NL              34515
+#define IDS_MUI_LANG_PL_PL              34516
+#define IDS_MUI_LANG_PT_BR              34517
+#define IDS_MUI_LANG_PT_PT              34518
+#define IDS_MUI_LANG_RU_RU              34519
+#define IDS_MUI_LANG_SK_SK              34520
+#define IDS_MUI_LANG_SV_SE              34521
+#define IDS_MUI_LANG_TR_TR              34522
+#define IDS_MUI_LANG_VI_VN              34523
+#define IDS_MUI_LANG_ZH_CN              34524
+#define IDS_MUI_LANG_ZH_TW              34525
 
 #define IDS_MUI_MENU_THEMES             37000
 #define IDM_THEMES_DEFAULT              37001
@@ -438,27 +463,28 @@
 #define IDM_FILE_OPEN                   40001
 #define IDM_FILE_REVERT                 40002
 #define IDM_FILE_BROWSE                 40003
-#define IDM_FILE_SAVE                   40004
-#define IDM_FILE_SAVEAS                 40005
-#define IDM_FILE_SAVECOPY               40006
-#define IDM_FILE_READONLY               40007
-#define IDM_FILE_LAUNCH                 40008
-#define IDM_FILE_LAUNCH_ELEVATED        40009
-#define IDM_FILE_EXPLORE_DIR            40010
-#define IDM_FILE_OPENWITH               40011
-#define IDM_FILE_RUN                    40012
-#define IDM_FILE_NEWWINDOW              40013
-#define IDM_FILE_NEWWINDOW2             40014
-#define IDM_FILE_PAGESETUP              40015
-#define IDM_FILE_PRINT                  40016
-#define IDM_FILE_PROPERTIES             40017
-#define IDM_FILE_CREATELINK             40018
-#define IDM_FILE_OPENFAV                40019
-#define IDM_FILE_ADDTOFAV               40020
-#define IDM_FILE_MANAGEFAV              40021
-#define IDM_FILE_RECENT                 40022
-#define IDM_FILE_EXIT                   40023
-#define IDM_FILE_PRESERVE_FILEMODTIME   40024
+#define IDM_GREP_WIN_SEARCH             40004
+#define IDM_FILE_SAVE                   40005
+#define IDM_FILE_SAVEAS                 40006
+#define IDM_FILE_SAVECOPY               40007
+#define IDM_FILE_READONLY               40008
+#define IDM_FILE_LAUNCH                 40009
+#define IDM_FILE_LAUNCH_ELEVATED        40010
+#define IDM_FILE_EXPLORE_DIR            40011
+#define IDM_FILE_OPENWITH               40012
+#define IDM_FILE_RUN                    40013
+#define IDM_FILE_NEWWINDOW              40014
+#define IDM_FILE_NEWWINDOW2             40015
+#define IDM_FILE_PAGESETUP              40016
+#define IDM_FILE_PRINT                  40017
+#define IDM_FILE_PROPERTIES             40018
+#define IDM_FILE_CREATELINK             40019
+#define IDM_FILE_OPENFAV                40020
+#define IDM_FILE_ADDTOFAV               40021
+#define IDM_FILE_MANAGEFAV              40022
+#define IDM_FILE_RECENT                 40023
+#define IDM_FILE_EXIT                   40024
+#define IDM_FILE_PRESERVE_FILEMODTIME   40025
 
 #define IDM_ENCODING_ANSI               40100
 #define IDM_ENCODING_UNICODE            40101
@@ -560,6 +586,10 @@
 #define IDM_EDIT_REMOVEDUPLICATELINES   40376
 #define IDM_EDIT_REMOVEEMPTYLINES       40377
 #define IDM_EDIT_MERGEEMPTYLINES        40378
+#define IDM_EDIT_CLEAR_MARKER           40379
+#define IDM_EDIT_CUT_MARKED             40380
+#define IDM_EDIT_COPY_MARKED            40381
+#define IDM_EDIT_DELETE_MARKED          40382
 
 #define IDM_VIEW_SCHEME                 40400
 #define IDM_VIEW_USE2NDDEFAULT          40401
@@ -577,7 +607,7 @@
 #define IDM_VIEW_HILITCURLN_BACK        40413
 #define IDM_VIEW_HILITCURLN_FRAME       40414
 #define IDM_VIEW_LINENUMBERS            40415
-#define IDM_VIEW_MARGIN                 40416
+#define IDM_VIEW_BOOKMARK_MARGIN        40416
 #define IDM_VIEW_ZOOMIN                 40417
 #define IDM_VIEW_ZOOMOUT                40418
 #define IDM_VIEW_RESETZOOM              40419
@@ -616,34 +646,49 @@
 #define IDM_VIEW_TOGGLEFOLDS            40452
 #define IDM_VIEW_TOGGLE_CURRENT_FOLD    40453
 #define IDM_VIEW_MARKOCCUR_ONOFF        40454
-#define IDM_VIEW_MARKOCCUR_CASE         40455
-#define IDM_VIEW_MARKOCCUR_WNONE        40456
-#define IDM_VIEW_MARKOCCUR_WORD         40457
-#define IDM_VIEW_MARKOCCUR_CURRENT      40458
-#define IDM_VIEW_MARKOCCUR_VISIBLE      40459
-#define IDM_VIEW_AUTOCOMPLETEWORDS      40460
-#define IDM_VIEW_AUTOCLEXKEYWORDS       40461
-#define IDM_VIEW_ACCELWORDNAV           40462
-#define IDM_VIEW_NOPRESERVECARET        40463
-#define IDM_VIEW_HYPERLINKHOTSPOTS      40464
-#define IDM_VIEW_COLORDEFHOTSPOTS       40465
-#define IDM_VIEW_CURRENTSCHEME          40466
-#define IDM_VIEW_SCROLLPASTEOF          40467
-#define IDM_VIEW_TOGGLE_VIEW            40468
-#define IDM_VIEW_CHASING_DOCTAIL        40469
-#define IDM_VIEW_TOGGLETB               40470
-#define IDM_VIEW_MUTE_MESSAGEBEEP       40471
-#define IDM_VIEW_SHOW_HYPLNK_CALLTIP    40472
-#define IDM_VIEW_SPLIT_UNDOTYPSEQ_LNBRK 40473
-#define IDM_VIEW_EDIT_LINECOMMENT       40474
+#define IDM_VIEW_MARKOCCUR_BOOKMARKS    40455
+#define IDM_VIEW_MARKOCCUR_CASE         40456
+#define IDM_VIEW_MARKOCCUR_WNONE        40457
+#define IDM_VIEW_MARKOCCUR_WORD         40458
+#define IDM_VIEW_MARKOCCUR_CURRENT      40459
+#define IDM_VIEW_MARKOCCUR_VISIBLE      40460
+#define IDM_VIEW_AUTOCOMPLETEWORDS      40461
+#define IDM_VIEW_AUTOCLEXKEYWORDS       40462
+#define IDM_VIEW_ACCELWORDNAV           40463
+#define IDM_VIEW_NOPRESERVECARET        40464
+#define IDM_VIEW_HYPERLINKHOTSPOTS      40465
+#define IDM_VIEW_COLORDEFHOTSPOTS       40466
+#define IDM_VIEW_COLOR_ARGB             40467
+#define IDM_VIEW_COLOR_RGBA             40468
+#define IDM_VIEW_COLOR_BGRA             40469
+#define IDM_VIEW_CURRENTSCHEME          40470
+#define IDM_VIEW_SCROLLPASTEOF          40471
+#define IDM_VIEW_TOGGLE_VIEW            40472
+#define IDM_VIEW_FV_FOLD                40473
+#define IDM_VIEW_FV_BOOKMARK            40474
+#define IDM_VIEW_FV_HIGHLIGHT           40475
+#define IDM_VIEW_FV_BKMRKFOLD           40476
+#define IDM_VIEW_FV_HIGHLGFOLD          40477
+#define IDM_VIEW_CHASING_DOCTAIL        40478
+#define IDM_VIEW_TOGGLETB               40479
+#define IDM_VIEW_MUTE_MESSAGEBEEP       40480
+#define IDM_VIEW_SHOW_HYPLNK_CALLTIP    40481
+#define IDM_VIEW_SPLIT_UNDOTYPSEQ_LNBRK 40482
+#define IDM_VIEW_EDIT_LINECOMMENT       40483
+#define IDM_VIEW_EVALTINYEXPRONSEL      40484
+#define IDM_VIEW_UNICODE_POINTS         40485
 
-#define IDM_SET_RENDER_TECH_DEFAULT     40500
-#define IDM_SET_RENDER_TECH_D2D         40501
-#define IDM_SET_RENDER_TECH_D2DRETAIN   40502
-#define IDM_SET_RENDER_TECH_D2DDC       40503
-#define IDM_SET_BIDIRECTIONAL_NONE      40504
-#define IDM_SET_BIDIRECTIONAL_L2R       40505
-#define IDM_SET_BIDIRECTIONAL_R2L       40506
+// keep Scintilla(SC) order
+#define IDM_SET_RENDER_TECH_GDI         40500   // SC_TECHNOLOGY_DEFAULT(0)
+#define IDM_SET_RENDER_TECH_D2D         40501   // SC_TECHNOLOGY_DIRECTWRITE(1)
+#define IDM_SET_RENDER_TECH_D2DRETAIN   40502   // SC_TECHNOLOGY_DIRECTWRITERETAIN(2)
+#define IDM_SET_RENDER_TECH_D2DDC       40503   // SC_TECHNOLOGY_DIRECTWRITEDC(3)
+#define IDM_SET_RTL_LAYOUT_EDIT         40504
+#define IDM_SET_RTL_LAYOUT_DLG          40505
+// keep Scintilla(SC) order 
+#define IDM_SET_BIDIRECTIONAL_NONE      40506   // SC_BIDIRECTIONAL_DISABLED(0)
+#define IDM_SET_BIDIRECTIONAL_L2R       40507   // SC_BIDIRECTIONAL_L2R(1)
+#define IDM_SET_BIDIRECTIONAL_R2L       40508   // SC_BIDIRECTIONAL_R2L(2)
 
 #define IDM_HELP_ABOUT                  40600
 #define IDM_HELP_CMD                    40601
@@ -1067,6 +1112,8 @@
 #define IDS_LEX_STR_63364               63364
 #define IDS_LEX_STR_63365               63365
 #define IDS_LEX_STR_63366               63366
+#define IDS_LEX_STR_63367               63367
+#define IDS_LEX_STR_63368               63368
 
 #define IDS_LEX_CSV_COL_0               63400
 #define IDS_LEX_CSV_COL_1               63401
@@ -1080,5 +1127,15 @@
 #define IDS_LEX_CSV_COL_9               63409
 
 #define RICHEDIT_CONTROL_VER            "RichEdit50W"  // RICHEDIT_CONTROL_VER
+
+#ifndef ES_EX_ZOOMABLE
+#define ES_EX_ZOOMABLE                  0x0010L
+#endif
+
+#ifndef RICHEDTCTRL_ADDSTYLE
+#define RICHEDTCTRL_ADDSTYLE            0x29c4
+#endif
+
+//#ifndef 
 
 #endif //_COMMON_RES_H_

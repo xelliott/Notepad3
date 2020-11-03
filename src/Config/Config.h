@@ -28,12 +28,14 @@ extern "C" {
 
 bool FindIniFile();
 bool TestIniFile();
-bool CreateIniFile();
+bool CanAccessPath(LPCWSTR lpIniFilePath, DWORD genericAccessRights);
+bool CreateIniFile(LPCWSTR pszIniFilePath, DWORD* pdwFileSize_out);
 void LoadSettings();
 bool SaveWindowPositionSettings(bool bClearSettings);
 bool SaveAllSettings(bool bForceSaveSettings);
+void CmdSaveSettingsNow();
 
-bool OpenSettingsFile(bool* keepCached);
+  bool OpenSettingsFile(bool* keepCached);
 bool CloseSettingsFile(bool bSaveChanges, bool keepCached);
 
 // ----------------------------------------------------------------------------
@@ -63,7 +65,7 @@ bool IniSectionSetLong(LPCWSTR lpSectionName, LPCWSTR lpKeyName, long lValue);
 bool IniSectionSetLongLong(LPCWSTR lpSectionName, LPCWSTR lpKeyName, long long llValue);
 bool IniSectionSetHex(LPCWSTR lpSectionName, LPCWSTR lpKeyName, int iValue);
 bool IniSectionSetDouble(LPCWSTR lpSectionName, LPCWSTR lpKeyName, double dValue);
-bool IniSectionSetBool(LPCWSTR lpSectionName, LPCWSTR lpName, bool bValue);
+bool IniSectionSetBool(LPCWSTR lpSectionName, LPCWSTR lpKeyName, bool bValue);
 
 inline bool IniSectionSetPos(LPCWSTR lpSectionName, LPCWSTR lpKeyName, DocPos posValue) {
   return IniSectionSetLongLong(lpSectionName, lpKeyName, posValue);
@@ -92,7 +94,7 @@ bool IniClearAllSections(LPCWSTR lpPrefix, bool bRemoveEmpty);
 
 size_t IniFileGetString(LPCWSTR lpFilePath, LPCWSTR lpSectionName, LPCWSTR lpKeyName, LPCWSTR lpDefault,
                         LPWSTR lpReturnedString, size_t cchReturnedString);
-bool  IniFileSetString(LPCWSTR lpFilePath, LPCWSTR lpSectionName, LPCWSTR lpKeyName, LPCWSTR lpString);
+bool IniFileSetString(LPCWSTR lpFilePath, LPCWSTR lpSectionName, LPCWSTR lpKeyName, LPCWSTR lpString);
 
 int  IniFileGetInt(LPCWSTR lpFilePath, LPCWSTR lpSectionName, LPCWSTR lpKeyName, int iDefault);
 bool IniFileSetInt(LPCWSTR lpFilePath, LPCWSTR lpSectionName, LPCWSTR lpKeyName, int iValue);
@@ -123,11 +125,11 @@ void AddFilePathToRecentDocs(LPCWSTR szFilePath);
 
 LPMRULIST MRU_Create(LPCWSTR pszRegKey, int iFlags, int iSize);
 bool      MRU_Destroy(LPMRULIST pmru);
-bool      MRU_Add(LPMRULIST pmru, LPCWSTR pszNew, cpi_enc_t iEnc, DocPos iPos, DocPos iAnchor, LPCWSTR pszBookMarks);
+bool      MRU_Add(LPMRULIST pmru, LPCWSTR pszNew, cpi_enc_t iEnc, DocPos iPos, DocPos iSelAnc, LPCWSTR pszBookMarks);
 bool      MRU_FindFile(LPMRULIST pmru, LPCWSTR pszFile, int* iIndex);
-bool      MRU_AddFile(LPMRULIST pmru, LPCWSTR pszFile, bool, bool, cpi_enc_t iEnc, DocPos iPos, DocPos iAnchor, LPCWSTR pszBookMarks);
+bool      MRU_AddFile(LPMRULIST pmru, LPWSTR pszFile, bool bRelativePath, bool bUnexpandMyDocs, cpi_enc_t iEnc, DocPos iPos, DocPos iSelAnc, LPCWSTR pszBookMarks);
 bool      MRU_Delete(LPMRULIST pmru, int iIndex);
-bool      MRU_Empty(LPMRULIST pmru);
+bool      MRU_Empty(LPMRULIST pmru, bool bExceptLeast);
 int       MRU_Enum(LPMRULIST pmru, int iIndex, LPWSTR pszItem, int cchItem);
 bool      MRU_Load(LPMRULIST pmru, bool bFileProps);
 void      MRU_Save(LPMRULIST pmru);

@@ -92,6 +92,7 @@ BEGIN
     IDT_VIEW_TOGGLE_VIEW     "Vista focalizzata"
     IDT_VIEW_CHASING_DOCTAIL "Monitoraggio log"
     IDT_VIEW_PIN_ON_TOP      "Sempre in primo piano"
+    IDT_GREP_WIN_TOOL        "Cerca nei file"
 END
 
 STRINGTABLE
@@ -126,7 +127,9 @@ STRINGTABLE
 BEGIN
     IDS_MUI_ERR_LOADFILE    "Errore aprendo ""%s""."
     IDS_MUI_ERR_SAVEFILE    "Errore salvando ""%s""."
-    IDS_MUI_ERR_BROWSE      "Nessun plugin file browser trovato.\nMiniPath può essere scaricato su https://rizonesoft.com."
+    IDS_MUI_ERR_DLG_FORMAT  "Errore '%s', causa:\n%s(ID:%d)\n"
+    IDS_MUI_ERR_BROWSE      "Nessun plugin file browser trovato.\nMiniPath può essere scaricato da https://rizonesoft.com."
+    IDS_MUI_ERR_GREPWIN     "Nessun plugin ricerca file trovato.\nIl plugin ricerca file grepWinNP3 può esssere scaricato da https://rizonesoft.com."
     IDS_MUI_ERR_MRUDLG      "Nessun accesso al file selezionato!\nVuoi rimuoverlo dalla lista?"
     IDS_MUI_ERR_CREATELINK  "Errore nella creazione del collegamento su Desktop."
     IDS_MUI_ERR_PREVWINDISABLED
@@ -147,7 +150,7 @@ BEGIN
     IDS_MUI_ERR_ADMINEXE    "Nessun eseguibile di administration trovato.\nControllare https://rizonesoft.com?"
     IDS_MUI_WARN_LOAD_BIG_FILE
                             "Sei sicuro di voler aprire questo file grande?\n\t(dimensione: %s >= %s)!\n(Le evidenziature di stile e sintassi non saranno applicate!)"
-    IDS_MUI_ERR_FILE_TOO_LARGE 
+    IDS_MUI_ERR_FILE_TOO_LARGE
                             "Impossibile gestire un file così grande (dimensione: %s)!"
     IDS_MUI_WARN_UNKNOWN_EXT
                             "Estensione sconosciuta (%s)!\nProseguire con il caricamento?"
@@ -155,6 +158,8 @@ BEGIN
     IDS_MUI_EOLMODENAME_CRLF   "Windows (CR+LF)"
     IDS_MUI_EOLMODENAME_LF     "Unix/Mac (LF)"
     IDS_MUI_EOLMODENAME_CR     "Old Mac (CR)"
+    IDS_MUI_WARN_NORMALIZE_EOLS
+                            "Vuoi normalizzare tutti i terminatori di riga, in modo che siano '%s'?"
 END
 
 STRINGTABLE
@@ -177,6 +182,8 @@ BEGIN
     IDS_MUI_SAVEDSETTINGS   "Le impostazioni correnti di Notepad3 sono state salvate."
     IDS_MUI_CREATEINI_FAIL  "Errore nella creazione del file delle impostazioni."
     IDS_MUI_WRITEINI_FAIL   "Errore nella scrittura del file delle impostazioni."
+    IDS_MUI_INIFILE_READONLY
+                            "Il file di configurazione è in Sola Lettura - Ignorare e sovrascrivere le impostazioni?"
     IDS_MUI_SETTINGSNOTSAVED
                             "Non è stato trovato un file delle impostazioni.\nPer conservare le modifiche agli Stili, salva le impostazioni adesso (F7) oppure ritorna alla configurazione degli Schemi (Ctrl+F12) ed esporta i tuoi Stili."
 END
@@ -192,6 +199,7 @@ BEGIN
     IDS_MUI_URL_OPEN_BROWSER "\nCtrl + Click per aprire il link nel browser."
     IDS_MUI_INF_PRSVFILEMODTM
                              "Conservazione della data di ultima modifica originale abilitata.\nQuesta opzione rimarrà attiva per questa sessione!"
+    IDS_MUI_OUT_OFF_OCCMRK   "Marcatori di occorrenza in esaurimento (Bookmark/Evidenziatura)!"
 END
 
 STRINGTABLE
@@ -244,10 +252,15 @@ STRINGTABLE
 BEGIN
     IDS_MUI_MENU_LANGUAGE   "&Lingua"
     IDS_MUI_MENU_THEMES     "&Collezione di Schemi"
-    IDM_THEMES_DEFAULT      "Impostazioni di fabbrica"
-    IDM_THEMES_FILE_ITEM    "Impostazioni standard"
+    IDM_THEMES_DEFAULT      "Impostazioni di &fabbrica"
+    IDM_THEMES_FILE_ITEM    "Impostazioni &standard"
     IDS_MUI_STATUSBAR_PREFIXES "Ln  ,Col  ,Sel  ,Sb  ,SLn  ,Occ  ,,,,,,,Ch  ,Repl  ,Eval  ,"
     IDS_MUI_STATUSBAR_POSTFIXES ",,,,,,,,,,,,,,,"
+    IDS_CLEAR_ALL           "Pulisci tutto"
+    IDS_MUI_CLEAR_FIND_HISTORY
+                            "Pulisci Cronologia Ricerche"
+    IDS_MUI_CLEAR_REPL_HISTORY
+                            "Pulisci Cronologia Sostituzioni"
 END
 
 STRINGTABLE
@@ -311,7 +324,7 @@ STRINGTABLE
 BEGIN
 
 IDS_MUI_ABOUT_RTF_0  "{\
-\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}}\
+\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Segoe UI;}}\
 {\\colortbl ;\\red80\\green160\\blue80;}\
 \\tx3500\\tx7000\\fs18\
 \\cf0 \\fs20\\b1\\ul1 Sviluppo:\\ul0\\b0\\fs18\\par\
@@ -332,44 +345,8 @@ IDS_MUI_ABOUT_RTF_5  "\
 \\cf0 \\fs20\\b1\\ul1 Licenze:\\ul0\\b0\\fs18\\par\
 "
 
-IDS_MUI_ABOUT_RTF_6  "\
-\\cf0 \\fs20\\b1\\ul1 Licenza Notepad3:\\ul0\\b0\\fs18\\par\
-\\cf0 \\par\
-\\cf0 Notepad3 and MiniPath Copyright \\u0169   2008-2020 Rizonesoft, All rights reserved.\\par\
-\\cf0 https://www.rizonesoft.com\\par\
-\\cf0 \\par\
-\\cf0 Redistribution and use in source and binary forms, with or without modification,\\par\
-\\cf0 are permitted provided that the following conditions are met:\\par\
-\\cf0 \\par\
-\\cf0 1. Redistributions of source code must retain the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer.\\par\
-\\cf0 \\par\
-\\cf0 2. Redistributions in binary form must reproduce the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer in the\\par\
-\\cf0 documentation and/or other materials provided with the distribution.\\par\
-\\cf0 \\par\
-\\cf0 3. Neither the name of Florian Balmer nor the names of its contributors\\par\
-\\cf0 may be used to endorse or promote products derived from this software\\par\
-\\cf0 without specific prior written permission.\\par\
-\\cf0 \\par\
-\\cf0 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\\par\
-\\cf0 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED\\par\
-\\cf0 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\\par\
-\\cf0 PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\\par\
-\\cf0 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\\par\
-\\cf0 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\\par\
-\\cf0 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\\par\
-\\cf0 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\\par\
-\\cf0 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\\par\
-\\cf0 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\\par\
-\\cf0 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\\par\
-}"
-
 END
 
-//
-// Lines added to synchronize the number of lines of all "strings_xx_yy.rc" files.
-//
 #endif    // Italian (Italy) resources
 /////////////////////////////////////////////////////////////////////////////
 

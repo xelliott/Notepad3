@@ -17,10 +17,9 @@
 
 using namespace Scintilla;
 
-FontAlias::FontAlias() noexcept {
-}
+FontAlias::FontAlias() noexcept = default;
 
-FontAlias::FontAlias(const FontAlias &other) noexcept : Font() {
+FontAlias::FontAlias(const FontAlias &other) noexcept {
 	SetID(other.fid);
 }
 
@@ -40,6 +39,9 @@ void FontAlias::ClearFont() noexcept {
 bool FontSpecification::operator==(const FontSpecification &other) const noexcept {
 	return fontName == other.fontName &&
 	       weight == other.weight &&
+	       // >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
+	       stretch == other.stretch &&
+	       // <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
 	       italic == other.italic &&
 	       size == other.size &&
 	       characterSet == other.characterSet &&
@@ -51,6 +53,10 @@ bool FontSpecification::operator<(const FontSpecification &other) const noexcept
 		return fontName < other.fontName;
 	if (weight != other.weight)
 		return weight < other.weight;
+	// >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
+	if (stretch != other.stretch)
+		return stretch < other.stretch;
+	// <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
 	if (italic != other.italic)
 		return italic == false;
 	if (size != other.size)
@@ -75,49 +81,52 @@ void FontMeasurements::ClearMeasurements() noexcept {
 	sizeZoomed = 2;
 }
 
-Style::Style() : FontSpecification() {
+Style::Style() {
 	Clear(ColourDesired(0, 0, 0), ColourDesired(0xff, 0xff, 0xff),
 	      Platform::DefaultFontSize() * SC_FONT_SIZE_MULTIPLIER, nullptr, SC_CHARSET_DEFAULT,
-	      SC_WEIGHT_NORMAL, false, false, false, caseMixed, true, true, false);
+	      SC_WEIGHT_NORMAL, SC_FONT_STRETCH_NORMAL, false, false, false, false, caseMixed, true, true, false);
 }
 
-Style::Style(const Style &source) : FontSpecification(), FontMeasurements() {
+Style::Style(const Style &source) noexcept : FontMeasurements() {
 	Clear(ColourDesired(0, 0, 0), ColourDesired(0xff, 0xff, 0xff),
 	      0, nullptr, 0,
-	      SC_WEIGHT_NORMAL, false, false, false, caseMixed, true, true, false);
+	      SC_WEIGHT_NORMAL, SC_FONT_STRETCH_NORMAL,  false, false, false, false, caseMixed, true, true, false);
 	fore = source.fore;
 	back = source.back;
 	characterSet = source.characterSet;
 	weight = source.weight;
+	stretch = source.stretch;
 	italic = source.italic;
 	size = source.size;
 	fontName = source.fontName;
 	eolFilled = source.eolFilled;
 	underline = source.underline;
+	strike = source.strike;
 	caseForce = source.caseForce;
 	visible = source.visible;
 	changeable = source.changeable;
 	hotspot = source.hotspot;
 }
 
-Style::~Style() {
-}
+Style::~Style() = default;
 
-Style &Style::operator=(const Style &source) {
+Style &Style::operator=(const Style &source) noexcept {
 	if (this == &source)
 		return * this;
 	Clear(ColourDesired(0, 0, 0), ColourDesired(0xff, 0xff, 0xff),
 	      0, nullptr, SC_CHARSET_DEFAULT,
-	      SC_WEIGHT_NORMAL, false, false, false, caseMixed, true, true, false);
+	      SC_WEIGHT_NORMAL, SC_FONT_STRETCH_NORMAL, false, false, false, false, caseMixed, true, true, false);
 	fore = source.fore;
 	back = source.back;
 	characterSet = source.characterSet;
 	weight = source.weight;
+	stretch = source.stretch;
 	italic = source.italic;
 	size = source.size;
 	fontName = source.fontName;
 	eolFilled = source.eolFilled;
 	underline = source.underline;
+	strike = source.strike;
 	caseForce = source.caseForce;
 	visible = source.visible;
 	changeable = source.changeable;
@@ -126,18 +135,20 @@ Style &Style::operator=(const Style &source) {
 
 void Style::Clear(ColourDesired fore_, ColourDesired back_, int size_,
         const char *fontName_, int characterSet_,
-        int weight_, bool italic_, bool eolFilled_,
-        bool underline_, ecaseForced caseForce_,
-        bool visible_, bool changeable_, bool hotspot_) {
+        int weight_, int stretch_, bool italic_, bool eolFilled_,
+        bool underline_, bool strike_, ecaseForced caseForce_,
+        bool visible_, bool changeable_, bool hotspot_) noexcept {
 	fore = fore_;
 	back = back_;
 	characterSet = characterSet_;
 	weight = weight_;
+	stretch = stretch_;
 	italic = italic_;
 	size = size_;
 	fontName = fontName_;
 	eolFilled = eolFilled_;
 	underline = underline_;
+	strike = strike_;
 	caseForce = caseForce_;
 	visible = visible_;
 	changeable = changeable_;
@@ -146,7 +157,7 @@ void Style::Clear(ColourDesired fore_, ColourDesired back_, int size_,
 	FontMeasurements::ClearMeasurements();
 }
 
-void Style::ClearTo(const Style &source) {
+void Style::ClearTo(const Style &source) noexcept {
 	Clear(
 	    source.fore,
 	    source.back,
@@ -154,16 +165,18 @@ void Style::ClearTo(const Style &source) {
 	    source.fontName,
 	    source.characterSet,
 	    source.weight,
+	    source.stretch,
 	    source.italic,
 	    source.eolFilled,
 	    source.underline,
+		source.strike,
 	    source.caseForce,
 	    source.visible,
 	    source.changeable,
 	    source.hotspot);
 }
 
-void Style::Copy(Font &font_, const FontMeasurements &fm_) {
+void Style::Copy(const Font &font_, const FontMeasurements &fm_) noexcept {
 	font.MakeAlias(font_);
 	(FontMeasurements &)(*this) = fm_;
 }

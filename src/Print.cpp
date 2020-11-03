@@ -16,6 +16,24 @@
 *                                                                             *
 *******************************************************************************/
 
+#if !defined(WINVER)
+#define WINVER 0x601  /*_WIN32_WINNT_WIN7*/
+#endif
+#if !defined(_WIN32_WINNT)
+#define _WIN32_WINNT 0x601  /*_WIN32_WINNT_WIN7*/
+#endif
+#if !defined(NTDDI_VERSION)
+#define NTDDI_VERSION 0x06010000  /*NTDDI_WIN7*/
+#endif
+#define VC_EXTRALEAN 1
+#define WIN32_LEAN_AND_MEAN 1
+#define NOMINMAX 1
+#include <windows.h>
+
+#include <commctrl.h>
+#include <commdlg.h>
+#include <string_view>
+
 extern "C" {
 #include "Helpers.h"
 #include "MuiLanguage.h"
@@ -23,22 +41,7 @@ extern "C" {
 #include "SciCall.h"
 }
 
-#include <commctrl.h>
-#include <shellapi.h>
-#include <shlwapi.h>
-#include <commdlg.h>
-#ifdef __cplusplus
-#include <cstring>
-#include <string_view>
-#else
-#include <string.h>
-#endif
-#include "Platform.h"
-#include "Scintilla.h"
-#include "SciLexer.h"
-
 #include "resource.h"
-
 
 extern "C" float Style_GetBaseFontSize();
 
@@ -55,15 +58,12 @@ static void EditPrintInit();
 //
 void StatusUpdatePrintPage(int iPageNum)
 {
-  WCHAR tch[32] = { L'\0' };
-
+  WCHAR tch[80] = { L'\0' };
   FormatLngStringW(tch,COUNTOF(tch),IDS_MUI_PRINTFILE,iPageNum);
-
   StatusSetText(Globals.hwndStatus,255,tch);
-  StatusSetSimple(Globals.hwndStatus,true);
-
-  InvalidateRect(Globals.hwndStatus,nullptr,true);
-  UpdateWindow(Globals.hwndStatus);
+  //RedrawWindow(Globals.hwndStatus, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+  InvalidateRect(Globals.hwndStatus,NULL,TRUE);
+  //UpdateWindow(Globals.hwndStatus);
 }
 
 
@@ -266,6 +266,7 @@ extern "C" bool EditPrint(HWND hwnd,LPCWSTR pszDocTitle,LPCWSTR pszPageFormat)
     SC_PRINT_SCREENCOLOURS };
 
   SendMessage(hwnd,SCI_SETPRINTCOLOURMODE,printColorModes[Settings.PrintColorMode],0);
+  //SendMessage(hwnd, SCI_SETPRINTWRAPMODE, SC_WRAP_WORD, 0); // default: SC_WRAP_WORD
 
   // Set print magnification...
   SendMessage(hwnd, SCI_SETPRINTMAGNIFICATION, (WPARAM)Settings.PrintZoom, 0);
@@ -443,7 +444,7 @@ extern "C" UINT_PTR CALLBACK PageSetupHook(HWND hwnd, UINT uiMsg, WPARAM wParam,
         WCHAR tch[512];
         WCHAR *p1,*p2;
 
-        if (Globals.hDlgIcon) { SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)Globals.hDlgIcon); }
+        SetDialogIconNP3(hwnd);
 
         UDACCEL const acc[1] = { { 0, 10 } };
         SendDlgItemMessage(hwnd,30,EM_LIMITTEXT,32,0);
@@ -503,7 +504,7 @@ extern "C" UINT_PTR CALLBACK PageSetupHook(HWND hwnd, UINT uiMsg, WPARAM wParam,
       break;
 
     case WM_DPICHANGED:
-      UpdateWindowLayoutForDPI(hwnd, 0, 0, 0, 0);
+      UpdateWindowLayoutForDPI(hwnd, (RECT*)lParam, NULL);
       break;
 
     case WM_COMMAND:
@@ -512,7 +513,7 @@ extern "C" UINT_PTR CALLBACK PageSetupHook(HWND hwnd, UINT uiMsg, WPARAM wParam,
         BOOL bError = FALSE;
         int const iZoom = (int)SendDlgItemMessage(hwnd,31,UDM_GETPOS32,0,(LPARAM)&bError);
         Settings.PrintZoom = bError ? Defaults.PrintZoom : iZoom;
-        int const iFontSize = (int)SendDlgItemMessage(hwnd, 41, UDM_GETPOS32, 0, (LPARAM)&bError);
+        /*int const iFontSize = (int)*/ SendDlgItemMessage(hwnd, 41, UDM_GETPOS32, 0, (LPARAM)&bError);
         Settings.PrintHeader = (int)SendDlgItemMessage(hwnd, 32, CB_GETCURSEL, 0, 0);
         Settings.PrintFooter = (int)SendDlgItemMessage(hwnd, 33, CB_GETCURSEL, 0, 0);
         Settings.PrintColorMode = (int)SendDlgItemMessage(hwnd, 34, CB_GETCURSEL, 0, 0);

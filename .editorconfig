@@ -1,6 +1,6 @@
 # EditorConfig is awesome: https://EditorConfig.org
 #
-# VisualStudio: https://docs.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options?view=vs-2017
+# VisualStudio: https://docs.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options?view=vs-2019
 
 # top-most EditorConfig file
 root = true
@@ -16,7 +16,7 @@ trim_trailing_whitespace = false
 [**.{h,c,cpp,hpp,cxx}]
 # Set default charset
 charset = utf-8
-# 2 space indentation
+# space (w=2) indentation
 indent_style = space
 indent_size = 2
 tab_width = 2
@@ -31,17 +31,5 @@ indent_style = space
 indent_size = 4
 tab_width = 4
 
-[minipath/language/**.{h,rc}]
-charset = utf-8
-# space (w=4) indentation
-indent_style = space
-indent_size = 4
-tab_width = 4
-
-[scintilla/**.{h,c,cpp,hpp,cxx}]
-charset = utf-8
-# tab (w=4) indentation
-indent_style = tab
-indent_size = 4
-tab_width = 4
-
+[language/common_res.rc]
+charset = latin1

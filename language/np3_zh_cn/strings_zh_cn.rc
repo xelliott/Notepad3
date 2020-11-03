@@ -15,7 +15,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Simplified Chinese (China) resources
+// Chinese Simplified (China) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 LANGUAGE LANG_CHINESE_SIMPLIFIED, SUBLANG_CHINESE_SIMPLIFIED
@@ -92,6 +92,7 @@ BEGIN
     IDT_VIEW_TOGGLE_VIEW     "仅显示匹配行"
     IDT_VIEW_CHASING_DOCTAIL "日志监控"
     IDT_VIEW_PIN_ON_TOP      "总是置顶"
+    IDT_GREP_WIN_TOOL        "在文件中查找"
 END
 
 STRINGTABLE
@@ -126,7 +127,9 @@ STRINGTABLE
 BEGIN
     IDS_MUI_ERR_LOADFILE    "加载“%s”时遇到错误。"
     IDS_MUI_ERR_SAVEFILE    "保存“%s”时遇到错误。"
+    IDS_MUI_ERR_DLG_FORMAT  "错误“%s”，原因：\n%s(ID:%d)\n"
     IDS_MUI_ERR_BROWSE      "无可用文件浏览器插件。\n\nMiniPath 插件可以从 https://rizonesoft.com/ 下载。"
+    IDS_MUI_ERR_GREPWIN     "无可用文件查找插件。\n\ngrepWinNP3 插件可以从 https://rizonesoft.com 下载。"
     IDS_MUI_ERR_MRUDLG      "指定的文件无法访问。它可能已被改名、删除或移动。\n\n从列表中删除它吗？"
     IDS_MUI_ERR_CREATELINK  "创建桌面快捷方式时遇到错误。"
     IDS_MUI_ERR_PREVWINDISABLED
@@ -147,7 +150,7 @@ BEGIN
     IDS_MUI_ERR_ADMINEXE    "无管理工具可用。\n\n访问 https://rizonesoft.com/ 看看？"
     IDS_MUI_WARN_LOAD_BIG_FILE
                             "是否确实要打开一个如此庞大的文件？\n\t（大小 %s >= %s）\n样式和语法高亮将被禁用。"
-    IDS_MUI_ERR_FILE_TOO_LARGE 
+    IDS_MUI_ERR_FILE_TOO_LARGE
                             "无法处理如此庞大的文件（大小 %s）！"
     IDS_MUI_WARN_UNKNOWN_EXT
                             "扩展名“%s”不是已知的文本文件。仍然要尝试打开吗？"
@@ -155,6 +158,8 @@ BEGIN
     IDS_MUI_EOLMODENAME_CRLF   "Windows (CR+LF)"
     IDS_MUI_EOLMODENAME_LF     "Unix/Mac (LF)"
     IDS_MUI_EOLMODENAME_CR     "Old Mac (CR)"
+    IDS_MUI_WARN_NORMALIZE_EOLS
+                            "是否将所有换行规格化为“%s”？"
 END
 
 STRINGTABLE
@@ -177,6 +182,8 @@ BEGIN
     IDS_MUI_SAVEDSETTINGS   "当前设置已保存。"
     IDS_MUI_CREATEINI_FAIL  "创建配置文件失败。"
     IDS_MUI_WRITEINI_FAIL   "将设置写入配置文件失败。"
+    IDS_MUI_INIFILE_READONLY
+                            "配置文件是只读的。是否忽略并替换设置？"
     IDS_MUI_SETTINGSNOTSAVED
                             "当前无配置文件可用。\n\n若要保存已修改的样式，请按 F7 保存设置，或按 Ctrl+F12 导出样式。"
 END
@@ -192,6 +199,7 @@ BEGIN
     IDS_MUI_URL_OPEN_BROWSER "\n按住 Ctrl 同时点击以在浏览器中打开链接。"
     IDS_MUI_INF_PRSVFILEMODTM
                              "已启用维持文件最后修改时间功能。\n\n本选项将在当前会话期间生效。"
+    IDS_MUI_OUT_OFF_OCCMRK   "书签/高亮标记已用完。"
 END
 
 STRINGTABLE
@@ -248,6 +256,11 @@ BEGIN
     IDM_THEMES_FILE_ITEM    "标准设置(&S)"
     IDS_MUI_STATUSBAR_PREFIXES "行  ,列  ,选定  ,字节  ,选行  ,匹配  ,,,,,,,字符  ,改写  ,求值  ,"
     IDS_MUI_STATUSBAR_POSTFIXES ",,,,,,,,,,,,,,,"
+    IDS_CLEAR_ALL           "清除全部"
+    IDS_MUI_CLEAR_FIND_HISTORY
+                            "清除查找历史"
+    IDS_MUI_CLEAR_REPL_HISTORY
+                            "清除替换历史"
 END
 
 STRINGTABLE
@@ -311,7 +324,7 @@ STRINGTABLE
 BEGIN
 
 IDS_MUI_ABOUT_RTF_0  "{\
-\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\fswiss\\fcharset134 Arial;}}\
+\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Segoe UI;}{\\f1\\fswiss\\fcharset134 Segoe UI;}}\
 {\\colortbl ;\\red80\\green160\\blue80;}\
 \\tx3500\\tx7000\\fs18\
 \\cf0 \\fs20\\b1\\ul1 \\f1\\b0\\'cf\\'ee\\'c4\\'bf\\'c0\\'fa\\'ca\\'b7\\'a3\\'ba\\f0\\b1\\ul0\\b0\\fs18\\par\
@@ -332,45 +345,9 @@ IDS_MUI_ABOUT_RTF_5  "\
 \\cf0 \\fs20\\b1\\ul1 \\f1\\b0\\'d0\\'ed\\'bf\\'c9\\'d6\\'a4\\'a3\\'ba\\f0\\b1\\ul0\\b0\\fs18\\par\
 "
 
-IDS_MUI_ABOUT_RTF_6  "\
-\\cf0 \\fs20\\b1\\ul1 Notepad3 \\f1\\b0\\'d0\\'ed\\'bf\\'c9\\'d6\\'a4\\'a3\\'ba\\f0\\b1\\ul0\\b0\\fs18\\par\
-\\cf0 \\par\
-\\cf0 Notepad3 and MiniPath Copyright \\u0169   2008-2020 Rizonesoft, All rights reserved.\\par\
-\\cf0 https://www.rizonesoft.com\\par\
-\\cf0 \\par\
-\\cf0 Redistribution and use in source and binary forms, with or without modification,\\par\
-\\cf0 are permitted provided that the following conditions are met:\\par\
-\\cf0 \\par\
-\\cf0 1. Redistributions of source code must retain the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer.\\par\
-\\cf0 \\par\
-\\cf0 2. Redistributions in binary form must reproduce the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer in the\\par\
-\\cf0 documentation and/or other materials provided with the distribution.\\par\
-\\cf0 \\par\
-\\cf0 3. Neither the name of Florian Balmer nor the names of its contributors\\par\
-\\cf0 may be used to endorse or promote products derived from this software\\par\
-\\cf0 without specific prior written permission.\\par\
-\\cf0 \\par\
-\\cf0 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\\par\
-\\cf0 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED\\par\
-\\cf0 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\\par\
-\\cf0 PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\\par\
-\\cf0 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\\par\
-\\cf0 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\\par\
-\\cf0 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\\par\
-\\cf0 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\\par\
-\\cf0 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\\par\
-\\cf0 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\\par\
-\\cf0 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\\par\
-}"
-
 END
 
-//
-// Lines added to synchronize the number of lines of all "strings_xx_yy.rc" files.
-//
-#endif    // Simplified Chinese (China) resources
+#endif    // Chinese Simplified (China) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

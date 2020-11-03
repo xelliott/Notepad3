@@ -39,7 +39,9 @@ WCHAR     g_wchIniFile[MAX_PATH];
 WCHAR     g_wchIniFile2[MAX_PATH];
 WCHAR     g_wchNP3IniFile[MAX_PATH];
 
-HICON     g_hDlgIcon = NULL;
+//HICON     g_hDlgIcon128 = NULL;
+HICON     g_hDlgIconBig = NULL;
+HICON     g_hDlgIconSmall = NULL;
 
 WCHAR     g_tchPrefLngLocName[LOCALE_NAME_MAX_LENGTH + 1];
 LANGID    g_iPrefLANGID;
@@ -121,7 +123,7 @@ HMODULE              g_hLngResContainer = NULL;
 WCHAR                g_tchPrefLngLocName[LOCALE_NAME_MAX_LENGTH + 1];
 LANGID               g_iPrefLANGID = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
 // 'en-US' internal default
-static WCHAR* const  g_tchAvailableLanguages = L"af-ZA be-BY de-DE en-GB es-ES fr-FR hu-HU it-IT ja-JP ko-KR nl-NL pl-PL pt-BR ru-RU sk-SK sv-SE tr-TR zh-CN";
+static WCHAR* const  g_tchAvailableLanguages = L"af-ZA be-BY de-DE en-GB es-ES es-MX fr-FR hi-IN hu-HU id-ID it-IT ja-JP ko-KR nl-NL pl-PL pt-BR pt-PT ru-RU sk-SK sv-SE tr-TR vi-VN zh-CN zh-TW";
 
 
 //=============================================================================
@@ -217,7 +219,10 @@ static HMODULE __fastcall _LoadLanguageResources(const WCHAR* localeName, LANGID
   // obtains access to the proper resource container 
   // for standard Win32 resource loading this is normally a PE module - use LoadLibraryEx
 
-  HMODULE hLangResourceContainer = LoadMUILibraryW(L"lng/mplng.dll", MUI_LANGUAGE_NAME, langID);
+  HMODULE const hLangResourceContainer = LoadMUILibraryW(L"lng/mplng.dll", MUI_LANGUAGE_NAME, langID);
+
+  // MUI Language for common controls
+  InitMUILanguage(langID);
 
   //if (!hLangResourceContainer)
   //{
@@ -330,6 +335,7 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInst,LPWSTR lpCmdLine,int
   {
     LANGID const langID = MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US);
     g_hLngResContainer = g_hInstance;
+    InitMUILanguage(langID);
     if (g_iPrefLANGID != langID) { bPrefLngNotAvail = TRUE; }
   }
   // ----------------------------------------------------
@@ -367,9 +373,23 @@ int WINAPI wWinMain(HINSTANCE hInstance,HINSTANCE hPrevInst,LPWSTR lpCmdLine,int
 //
 BOOL InitApplication(HINSTANCE hInstance)
 {
-  if (!g_hDlgIcon) {
-    g_hDlgIcon = LoadImage(g_hInstance, MAKEINTRESOURCE(IDR_MAINWND), IMAGE_ICON,
-                           GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+  // ICON_BIG
+  int const cxb = GetSystemMetrics(SM_CXICON);
+  int const cyb = GetSystemMetrics(SM_CYICON);
+  // ICON_SMALL
+  int const cxs = GetSystemMetrics(SM_CXSMICON);
+  int const cys = GetSystemMetrics(SM_CYSMICON);
+
+  //UINT const fuLoad = LR_DEFAULTCOLOR | LR_SHARED;
+
+  //if (!g_hDlgIcon128) {
+  //  LoadIconWithScaleDown(hInstance, MAKEINTRESOURCE(IDR_MAINWND), 128, 128, &g_hDlgIcon128);
+  //}
+  if (!g_hDlgIconBig) {
+    LoadIconWithScaleDown(hInstance, MAKEINTRESOURCE(IDR_MAINWND), cxb, cyb, &g_hDlgIconBig);
+  }
+  if (!g_hDlgIconSmall) {
+    LoadIconWithScaleDown(hInstance, MAKEINTRESOURCE(IDR_MAINWND), cxs, cys, &g_hDlgIconSmall);
   }
 
   WNDCLASS wc;
@@ -380,7 +400,7 @@ BOOL InitApplication(HINSTANCE hInstance)
   wc.cbClsExtra    = 0;
   wc.cbWndExtra    = 0;
   wc.hInstance     = hInstance;
-  wc.hIcon         = g_hDlgIcon;
+  wc.hIcon         = g_hDlgIconSmall;
   wc.hCursor       = LoadCursor(hInstance,IDC_ARROW);
   wc.hbrBackground = (HBRUSH)(COLOR_3DFACE+1);
   wc.lpszMenuName  = NULL;
@@ -1048,7 +1068,7 @@ static HBITMAP _LoadBitmapFile(LPCWSTR path)
     path = szTmp;
   }
 
-  if (!PathFileExists(path)) {
+  if (!PathIsExistingFile(path)) {
     return NULL;
   }
   HBITMAP const hbmp = (HBITMAP)LoadImage(NULL, path, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE);
@@ -2159,7 +2179,7 @@ LRESULT MsgCommand(HWND hwnd,WPARAM wParam,LPARAM lParam)
 
     case IDM_VIEW_OPTIONS:
       OptionsPropSheet(hwnd, g_hLngResContainer);
-      bHasQuickview = PathFileExists(Settings.szQuickview);
+      bHasQuickview = PathIsExistingFile(Settings.szQuickview);
       break;
 
 
@@ -3053,7 +3073,7 @@ BOOL DisplayLnkFile(LPCWSTR pszLnkFile)
   if (!PathGetLnkPath(pszLnkFile,szTmp,COUNTOF(szTmp)))
   {
     // Select lnk-file if target is not available
-    if (PathFileExists(pszLnkFile))
+    if (PathIsExistingFile(pszLnkFile))
     {
       SHFILEINFO shfi;
 
@@ -3140,7 +3160,7 @@ BOOL DisplayLnkFile(LPCWSTR pszLnkFile)
   else
   {
     // Select lnk-file if target is not available
-    if (PathFileExists(pszLnkFile))
+    if (PathIsExistingFile(pszLnkFile))
     {
       SHFILEINFO shfi;
 
@@ -3450,7 +3470,7 @@ void LaunchTarget(LPCWSTR lpFileName,BOOL bOpenNew)
       lstrcpy(szTmp,szTargetApplication);
       PathAbsoluteFromApp(szTmp,szFile,COUNTOF(szFile),TRUE);
 
-      //~if (!PathFileExists(szFile)) {
+      //~if (!PathIsExistingFile(szFile)) {
       //~  if (!SearchPath(NULL,szTmp,NULL,COUNTOF(szFile),szFile,NULL)) {
       //~    GetModuleFileName(NULL,szFile,COUNTOF(szFile));
       //~    PathRemoveFileSpec(szFile);
@@ -3511,7 +3531,7 @@ void LaunchTarget(LPCWSTR lpFileName,BOOL bOpenNew)
 
       //~if (PathIsRelative(szTmp)) {
       //~  PathAbsoluteFromApp(szTmp,szFile,COUNTOF(szFile),TRUE);
-      //~  if (!PathFileExists(szFile)) {
+      //~  if (!PathIsExistingFile(szFile)) {
       //~    if (!SearchPath(NULL,szTmp,NULL,COUNTOF(szFile),szFile,NULL)) {
       //~      GetModuleFileName(NULL,szFile,COUNTOF(szFile));
       //~      PathRemoveFileSpec(szFile);
@@ -3625,15 +3645,14 @@ void SnapToTarget(HWND hwnd)
 void SnapToDefaultPos(HWND hwnd)
 {
   WINDOWPLACEMENT wndpl;
-  HMONITOR hMonitor;
-  MONITORINFO mi;
   int x,y,cx,cy;
   RECT rcOld;
 
   GetWindowRect(hwnd,&rcOld);
 
-  hMonitor = MonitorFromRect(&rcOld,MONITOR_DEFAULTTONEAREST);
-  mi.cbSize = sizeof(mi);
+  MONITORINFO mi = {0};
+  mi.cbSize = sizeof(MONITORINFO);
+  HMONITOR const hMonitor = MonitorFromRect(&rcOld, MONITOR_DEFAULTTONEAREST);
   GetMonitorInfo(hMonitor,&mi);
 
   x = mi.rcWork.left + 16;
@@ -3661,7 +3680,8 @@ void SnapToDefaultPos(HWND hwnd)
     OffsetRect(&wndpl.rcNormalPosition,mi.rcMonitor.left - mi.rcWork.left,mi.rcMonitor.top - mi.rcWork.top);
   }
 
-  SetWindowPlacement(hwnd,&wndpl);
+  SetWindowPlacement(hwnd, &wndpl); // 1st set correct screen (DPI Aware)
+  SetWindowPlacement(hwnd, &wndpl); // 2nd resize position to correct DPI settings
 }
 
 

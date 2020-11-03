@@ -139,16 +139,16 @@ WCHAR* StrNextTokW(WCHAR* strg, const WCHAR* tokens)
   return n;
 }
 
-
 //=============================================================================
 //
 //  GetWinVersionString()
 //
-
 static OSVERSIONINFOEX s_OSversion = { 0 };
 
 static void _GetTrueWindowsVersion()
 {
+  if (s_OSversion.dwOSVersionInfoSize != 0) { return; }
+
   // clear
   ZeroMemory(&s_OSversion, sizeof(OSVERSIONINFOEX));
   s_OSversion.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
@@ -157,9 +157,8 @@ static void _GetTrueWindowsVersion()
   void (WINAPI *pRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation) = NULL;
 
   // load the System-DLL
-  HINSTANCE hNTdllDll = LoadLibrary(L"ntdll.dll");
-
-  if (hNTdllDll != NULL)
+  HINSTANCE const hNTdllDll = LoadLibrary(L"ntdll.dll");
+  if (hNTdllDll)
   {
     // get the function pointer to RtlGetVersion
     pRtlGetVersion = (void (WINAPI*)(PRTL_OSVERSIONINFOW)) GetProcAddress(hNTdllDll, "RtlGetVersion");
@@ -181,9 +180,16 @@ static void _GetTrueWindowsVersion()
 }
 // ----------------------------------------------------------------------------
 
+
+// ----------------------------------------------------------------------------
+// https://docs.microsoft.com/en-us/windows/release-information/
+// ----------------------------------------------------------------------------
 static DWORD _Win10BuildToReleaseId(DWORD build)
 {
-  if (build >= 18363) {
+  if (build >= 19041) {
+    return 2004;
+  }
+  else if (build >= 18363) {
     return 1909;
   }
   else if (build >= 18362) {
@@ -204,9 +210,10 @@ static DWORD _Win10BuildToReleaseId(DWORD build)
   else if (build >= 14393) {
     return 1607;
   }
-  else {
-    return 1507;
+  else if (build >= 10586) {
+    return 1511;
   }
+  return 0; // 10240
 }
 // ----------------------------------------------------------------------------
 
@@ -234,11 +241,10 @@ void GetWinVersionString(LPWSTR szVersionStr, size_t cchVersionStr)
   }
   
   if (IsWindows10OrGreater()) {
-    WCHAR win10ver[80] = { L'\0' };
-    if (s_OSversion.dwOSVersionInfoSize == 0) { _GetTrueWindowsVersion(); }
+    _GetTrueWindowsVersion();
     DWORD const build = s_OSversion.dwBuildNumber;
-    StringCchPrintf(win10ver, COUNTOF(win10ver), L" Version %i (Build %i)", 
-      _Win10BuildToReleaseId(build) , build);
+    WCHAR win10ver[80] = { L'\0' };
+    StringCchPrintf(win10ver, COUNTOF(win10ver), L" Version %i (Build %i)", _Win10BuildToReleaseId(build) , build);
     StringCchCat(szVersionStr, cchVersionStr, win10ver);
   }
 }
@@ -261,137 +267,10 @@ bool SetClipboardTextW(HWND hwnd, LPCWSTR pszTextW, size_t cchTextW)
       SetClipboardData(CF_UNICODETEXT, hData);
     }
     CloseClipboard();
-    // cppcheck-suppress memleak // ClipBoard is owner now
     return true; 
   }
   CloseClipboard();
   return false;
-}
-
-
-//=============================================================================
-//
-//  ConvertIconToBitmap()
-//
-HBITMAP ConvertIconToBitmap(const HICON hIcon, const int cx, const int cy)
-{
-  const HDC hScreenDC = GetDC(NULL);
-  const HBITMAP hbmpTmp = CreateCompatibleBitmap(hScreenDC, cx, cy);
-  const HDC hMemDC = CreateCompatibleDC(hScreenDC);
-  const HBITMAP hOldBmp = SelectObject(hMemDC, hbmpTmp);
-  DrawIconEx(hMemDC, 0, 0, hIcon, cx, cy, 0, NULL, DI_NORMAL);
-  SelectObject(hMemDC, hOldBmp);
-
-  const HBITMAP hDibBmp = (HBITMAP)CopyImage((HANDLE)hbmpTmp, IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE | LR_CREATEDIBSECTION);
-
-  DeleteObject(hbmpTmp);
-  DeleteDC(hMemDC);
-  ReleaseDC(NULL, hScreenDC);
-
-  return hDibBmp;
-}
-
-
-//=============================================================================
-//
-//  SetUACIcon()
-//
-void SetUACIcon(const HMENU hMenu, const UINT nItem)
-{
-  static bool bInitialized = false;
-  if (bInitialized) { return; }
-
-  //const int cx = GetSystemMetrics(SM_CYMENU) - 4;
-  //const int cy = cx;
-  int const cx = GetSystemMetrics(SM_CXSMICON);
-  int const cy = GetSystemMetrics(SM_CYSMICON);
-
-  if (Globals.hIconMsgShieldSmall)
-  {
-    MENUITEMINFO mii = { 0 };
-    mii.cbSize = sizeof(mii);
-    mii.fMask = MIIM_BITMAP;
-    mii.hbmpItem = ConvertIconToBitmap(Globals.hIconMsgShieldSmall, cx, cy);
-    SetMenuItemInfo(hMenu, nItem, FALSE, &mii);
-  }
-  bInitialized = true;
-}
-
-
-//=============================================================================
-//
-//  GetCurrentPPI()
-//  (font size) points per inch
-//
-DPI_T GetCurrentPPI(HWND hwnd) {
-  HDC const hDC = GetDC(hwnd);
-  DPI_T ppi;
-  ppi.x = max_u(GetDeviceCaps(hDC, LOGPIXELSX), USER_DEFAULT_SCREEN_DPI);
-  ppi.y = max_u(GetDeviceCaps(hDC, LOGPIXELSY), USER_DEFAULT_SCREEN_DPI);
-  ReleaseDC(hwnd, hDC);
-  return ppi;
-}
-
-/*
-if (!bSucceed) {
-  NONCLIENTMETRICS ncm;
-  ncm.cbSize = sizeof(NONCLIENTMETRICS);
-  SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof(NONCLIENTMETRICS),&ncm,0);
-  if (ncm.lfMessageFont.lfHeight < 0)
-  ncm.lfMessageFont.lfHeight = -ncm.lfMessageFont.lfHeight;
-  *wSize = (WORD)MulDiv(ncm.lfMessageFont.lfHeight,72,iLogPixelsY);
-  if (*wSize == 0)
-    *wSize = 8;
-}*/
-
-
-//=============================================================================
-//
-//  UpdateWindowLayoutForDPI()
-//
-void UpdateWindowLayoutForDPI(HWND hWnd, int x_96dpi, int y_96dpi, int w_96dpi, int h_96dpi)
-{
-  // only update yet
-  SetWindowPos(hWnd, hWnd, x_96dpi, y_96dpi, w_96dpi, h_96dpi,
-    SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOREPOSITION );
-
-  // TODO: ...
-#if 0
-  DPI_T const wndDPI = GetCurrentDPI(hWnd);
-
-  int dpiScaledX = MulDiv(x_96dpi, wndDPI.x, 96);
-  int dpiScaledY = MulDiv(y_96dpi, wndDPI.y, 96);
-  int dpiScaledWidth = MulDiv(w_96dpi, wndDPI.y, 96);
-  int dpiScaledHeight = MulDiv(h_96dpi, wndDPI.y, 96);
-
-  SetWindowPos(hWnd, hWnd, dpiScaledX, dpiScaledY, dpiScaledWidth, dpiScaledY, SWP_NOZORDER | SWP_NOACTIVATE);
-#endif
-
-}
-
-
-//=============================================================================
-//
-//  ResizeImageForCurrentDPI()
-//
-HBITMAP ResizeImageForCurrentDPI(HWND hwnd, HBITMAP hbmp) 
-{
-  if (hbmp) {
-    BITMAP bmp;
-    if (GetObject(hbmp, sizeof(BITMAP), &bmp)) {
-      DPI_T const DPI = Scintilla_GetCurrentDPI(hwnd);
-      int const width = MulDiv(bmp.bmWidth, DPI.x, USER_DEFAULT_SCREEN_DPI);
-      int const height = MulDiv(bmp.bmHeight, DPI.y, USER_DEFAULT_SCREEN_DPI);
-      if ((width != bmp.bmWidth) || (height != bmp.bmHeight)) {
-        HBITMAP hCopy = CopyImage(hbmp, IMAGE_BITMAP, width, height, LR_CREATEDIBSECTION | LR_COPYRETURNORG | LR_COPYDELETEORG);
-        if (hCopy) {
-          DeleteObject(hbmp);
-          hbmp = hCopy;
-        }
-      }
-    }
-  }
-  return hbmp;
 }
 
 
@@ -636,9 +515,10 @@ bool IsRunAsAdmin()
   PSID pAdministratorsGroup = NULL;
 
   Globals.dwLastError = ERROR_SUCCESS;
-  const WCHAR* pLastErrMsg = L"";
 
   do {
+    //const WCHAR* pLastErrMsg = L"";
+    
     // Allocate and initialize a SID of the administrators group.
     SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
     if (!AllocateAndInitializeSid(
@@ -650,7 +530,7 @@ bool IsRunAsAdmin()
       &pAdministratorsGroup))
     {
       Globals.dwLastError = GetLastError();
-      pLastErrMsg = L"AllocateAndInitializeSid()";
+      //pLastErrMsg = L"AllocateAndInitializeSid()";
       break;
     }
 
@@ -659,7 +539,7 @@ bool IsRunAsAdmin()
     if (!CheckTokenMembership(NULL, pAdministratorsGroup, &fIsRunAsAdmin))
     {
       Globals.dwLastError = GetLastError();
-      pLastErrMsg = L"CheckTokenMembership()";
+      //pLastErrMsg = L"CheckTokenMembership()";
       break;
     }
 
@@ -674,27 +554,6 @@ bool IsRunAsAdmin()
 
   return (bool)fIsRunAsAdmin;
 }
-
-
-
-//=============================================================================
-//
-//  SetExplorerTheme()
-//
-//bool SetExplorerTheme(HWND hwnd)
-//{
-//  FARPROC pfnSetWindowTheme;
-//
-//  if (IsVistaOrHigher()) {
-//    if (hLocalModUxTheme) {
-//      pfnSetWindowTheme = GetProcAddress(hLocalModUxTheme,"SetWindowTheme");
-//
-//      if (pfnSetWindowTheme)
-//        return (S_OK == pfnSetWindowTheme(hwnd,L"Explorer",NULL));
-//    }
-//  }
-//  return false;
-//}
 
 
 //=============================================================================
@@ -807,24 +666,22 @@ bool VerifyContrast(COLORREF cr1,COLORREF cr2)
 //  IsFontAvailable()
 //  Test if a certain font is installed on the system
 //
-int CALLBACK EnumFontsProc(CONST LOGFONT *plf,CONST TEXTMETRIC *ptm,DWORD FontType,LPARAM lParam)
+static int CALLBACK EnumFontsProc(CONST LOGFONT *plf,CONST TEXTMETRIC *ptm,DWORD FontType,LPARAM lParam)
 {
-  *((PBOOL)lParam) = true;
   UNUSED(plf);
   UNUSED(ptm);
   UNUSED(FontType);
+  *((PBOOL)lParam) = true;
   return 0;
 }
 
 bool IsFontAvailable(LPCWSTR lpszFontName)
 {
   BOOL fFound = FALSE;
-
-  HDC hDC = GetDC(NULL);
+  HDC const hDC = GetDC(NULL);
   EnumFonts(hDC,lpszFontName,EnumFontsProc,(LPARAM)&fFound);
   ReleaseDC(NULL,hDC);
-
-  return (bool)(fFound);
+  return fFound;
 }
 
 
@@ -832,22 +689,12 @@ bool IsFontAvailable(LPCWSTR lpszFontName)
 //
 //  IsCmdEnabled()
 //
-bool IsCmdEnabled(HWND hwnd,UINT uId)
+bool IsCmdEnabled(HWND hwnd, UINT uId)
 {
-
-  HMENU hmenu;
-  UINT ustate;
-
-  hmenu = GetMenu(hwnd);
-
-  SendMessage(hwnd,WM_INITMENU,(WPARAM)hmenu,0);
-
-  ustate = GetMenuState(hmenu,uId,MF_BYCOMMAND);
-
-  if (ustate == 0xFFFFFFFF) {
-    return true;
-  }
-  return (!(ustate & (MF_GRAYED|MF_DISABLED)));
+  HMENU const hmenu = GetMenu(hwnd);
+  SendMessage(hwnd, WM_INITMENU,(WPARAM)hmenu, 0);
+  UINT const ustate = GetMenuState(hmenu, uId, MF_BYCOMMAND);
+  return ((ustate == 0xFFFFFFFF) ? true : (!(ustate & (MF_GRAYED | MF_DISABLED))));
 }
 
 
@@ -916,6 +763,19 @@ bool GetKnownFolderPath(REFKNOWNFOLDERID rfid, LPWSTR lpOutPath, size_t cchCount
   return false;
 }
 
+
+//=============================================================================
+//
+//  PathGetModuleDirectory()
+//
+void PathGetAppDirectory(LPWSTR lpszDest, DWORD cchDest)
+{
+  GetModuleFileName(NULL, lpszDest, cchDest);
+  PathCchRemoveFileSpec(lpszDest, (size_t)cchDest);
+  PathCanonicalizeEx(lpszDest, cchDest);
+}
+
+
 //=============================================================================
 //
 //  PathRelativeToApp()
@@ -924,47 +784,52 @@ void PathRelativeToApp(
   LPWSTR lpszSrc,LPWSTR lpszDest,int cchDest,bool bSrcIsFile,
   bool bUnexpandEnv,bool bUnexpandMyDocs) {
 
-  WCHAR wchAppPath[MAX_PATH] = { L'\0' };
+  WCHAR wchAppDir[MAX_PATH] = { L'\0' };
   WCHAR wchWinDir[MAX_PATH] = { L'\0' };
   WCHAR wchUserFiles[MAX_PATH] = { L'\0' };
   WCHAR wchPath[MAX_PATH] = { L'\0' };
   WCHAR wchResult[MAX_PATH] = { L'\0' };
-  DWORD dwAttrTo = (bSrcIsFile) ? 0 : FILE_ATTRIBUTE_DIRECTORY;
+  DWORD dwAttrTo = (bSrcIsFile) ? FILE_ATTRIBUTE_NORMAL : FILE_ATTRIBUTE_DIRECTORY;
 
-  GetModuleFileName(NULL,wchAppPath,COUNTOF(wchAppPath));
-  PathCanonicalizeEx(wchAppPath,MAX_PATH);
-  PathCchRemoveFileSpec(wchAppPath,COUNTOF(wchAppPath));
+  PathGetAppDirectory(wchAppDir, COUNTOF(wchAppDir));
+
   (void)GetWindowsDirectory(wchWinDir,COUNTOF(wchWinDir));
   GetKnownFolderPath(&FOLDERID_Documents, wchUserFiles, COUNTOF(wchUserFiles));
 
   if (bUnexpandMyDocs &&
       !PathIsRelative(lpszSrc) &&
-      !PathIsPrefix(wchUserFiles,wchAppPath) &&
+      !PathIsPrefix(wchUserFiles,wchAppDir) &&
        PathIsPrefix(wchUserFiles,lpszSrc) &&
-       PathRelativePathTo(wchPath,wchUserFiles,FILE_ATTRIBUTE_DIRECTORY,lpszSrc,dwAttrTo)) {
+       PathRelativePathTo(wchPath,wchUserFiles,FILE_ATTRIBUTE_DIRECTORY,lpszSrc,dwAttrTo)) 
+  {
     StringCchCopy(wchUserFiles,COUNTOF(wchUserFiles),L"%CSIDL:MYDOCUMENTS%");
     PathCchAppend(wchUserFiles,COUNTOF(wchUserFiles),wchPath);
     StringCchCopy(wchPath,COUNTOF(wchPath),wchUserFiles);
   }
-  else if (PathIsRelative(lpszSrc) || PathCommonPrefix(wchAppPath,wchWinDir,NULL))
-    StringCchCopyN(wchPath,COUNTOF(wchPath),lpszSrc,COUNTOF(wchPath));
+  else if (PathIsRelative(lpszSrc) || PathCommonPrefix(wchAppDir, wchWinDir, NULL)) {
+    StringCchCopyN(wchPath, COUNTOF(wchPath), lpszSrc, COUNTOF(wchPath));
+  }
   else {
-    if (!PathRelativePathTo(wchPath,wchAppPath,FILE_ATTRIBUTE_DIRECTORY,lpszSrc,dwAttrTo))
-      StringCchCopyN(wchPath,COUNTOF(wchPath),lpszSrc,COUNTOF(wchPath));
+    if (!PathRelativePathTo(wchPath, wchAppDir, FILE_ATTRIBUTE_DIRECTORY, lpszSrc, dwAttrTo)) {
+      StringCchCopyN(wchPath, COUNTOF(wchPath), lpszSrc, COUNTOF(wchPath));
+    }
   }
 
   if (bUnexpandEnv) {
-    if (!PathUnExpandEnvStrings(wchPath,wchResult,COUNTOF(wchResult)))
-      StringCchCopyN(wchResult,COUNTOF(wchResult),wchPath,COUNTOF(wchResult));
+    if (!PathUnExpandEnvStrings(wchPath, wchResult, COUNTOF(wchResult))) {
+      StringCchCopyN(wchResult, COUNTOF(wchResult), wchPath, COUNTOF(wchResult));
+    }
   }
-  else
-    StringCchCopyN(wchResult,COUNTOF(wchResult),wchPath,COUNTOF(wchResult));
-
+  else {
+    StringCchCopyN(wchResult, COUNTOF(wchResult), wchPath, COUNTOF(wchResult));
+  }
   int cchLen = (cchDest == 0) ? MAX_PATH : cchDest;
-  if (lpszDest == NULL || lpszSrc == lpszDest)
-    StringCchCopyN(lpszSrc,cchLen,wchResult,cchLen);
-  else
-    StringCchCopyN(lpszDest,cchLen,wchResult,cchLen);
+  if (lpszDest == NULL || lpszSrc == lpszDest) {
+    StringCchCopyN(lpszSrc, cchLen, wchResult, cchLen);
+  }
+  else {
+    StringCchCopyN(lpszDest, cchLen, wchResult, cchLen);
+  }
 }
 
 
@@ -987,27 +852,23 @@ void PathAbsoluteFromApp(LPWSTR lpszSrc,LPWSTR lpszDest,int cchDest,bool bExpand
     PathCchAppend(wchPath,COUNTOF(wchPath),lpszSrc+CSTRLEN("%CSIDL:MYDOCUMENTS%"));
   }
   else {
-    if (lpszSrc) {
-      StringCchCopyN(wchPath,COUNTOF(wchPath),lpszSrc,COUNTOF(wchPath));
-    }
+    StringCchCopyN(wchPath,COUNTOF(wchPath),lpszSrc,COUNTOF(wchPath));
   }
 
-  if (bExpandEnv)
-    ExpandEnvironmentStringsEx(wchPath,COUNTOF(wchPath));
-
+  if (bExpandEnv) {
+    ExpandEnvironmentStringsEx(wchPath, COUNTOF(wchPath));
+  }
   if (PathIsRelative(wchPath)) {
-    GetModuleFileName(NULL,wchResult,COUNTOF(wchResult));
-    PathCanonicalizeEx(wchResult, COUNTOF(wchResult));
-    PathCchRemoveFileSpec(wchResult, COUNTOF(wchResult));
+    PathGetAppDirectory(wchResult, COUNTOF(wchResult));
     PathCchAppend(wchResult,COUNTOF(wchResult),wchPath);
   }
-  else
-    StringCchCopyN(wchResult,COUNTOF(wchResult),wchPath,COUNTOF(wchPath));
-
+  else {
+    StringCchCopyN(wchResult, COUNTOF(wchResult), wchPath, COUNTOF(wchPath));
+  }
   PathCanonicalizeEx(wchResult,MAX_PATH);
-  if (PathGetDriveNumber(wchResult) != -1)
-    CharUpperBuff(wchResult,1);
-
+  if (PathGetDriveNumber(wchResult) != -1) {
+    CharUpperBuff(wchResult, 1);
+  }
   if (lpszDest == NULL || lpszSrc == lpszDest)
     StringCchCopyN(lpszSrc,((cchDest == 0) ? MAX_PATH : cchDest),wchResult,COUNTOF(wchResult));
   else
@@ -1032,7 +893,7 @@ bool PathIsLnkFile(LPCWSTR pszPath)
   if (!pszPath || !*pszPath)
     return false;
 
-  if (StringCchCompareXI(PathFindExtension(pszPath), L".lnk")) {
+  if (StringCchCompareXI(PathFindExtension(pszPath), L".lnk") != 0) {
     return false;
   }
   return PathGetLnkPath(pszPath,tchResPath,COUNTOF(tchResPath));
@@ -1049,18 +910,17 @@ bool PathIsLnkFile(LPCWSTR pszPath)
 //
 //  Manipulates: pszResPath
 //
-bool PathGetLnkPath(LPCWSTR pszLnkFile,LPWSTR pszResPath,int cchResPath)
+bool PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
 {
-
-  IShellLink       *psl;
-  WIN32_FIND_DATA  fd;
+  IShellLink*      psl = NULL;
+  WIN32_FIND_DATA  fd = {0};
   bool             bSucceeded = false;
 
   if (SUCCEEDED(CoCreateInstance(&CLSID_ShellLink,NULL,
                                  CLSCTX_INPROC_SERVER,
                                  &IID_IShellLink,(void**)&psl)))
   {
-    IPersistFile *ppf;
+    IPersistFile *ppf = NULL;
 
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl,&IID_IPersistFile,(void**)&ppf)))
     {
@@ -1085,12 +945,10 @@ bool PathGetLnkPath(LPCWSTR pszLnkFile,LPWSTR pszResPath,int cchResPath)
   }
 
   if (bSucceeded) {
-    ExpandEnvironmentStringsEx(pszResPath,cchResPath);
     PathCanonicalizeEx(pszResPath,cchResPath);
   }
 
   return(bSucceeded);
-
 }
 
 
@@ -1130,7 +988,6 @@ bool PathIsLnkToDirectory(LPCWSTR pszPath,LPWSTR pszResPath,int cchResPath)
 //
 bool PathCreateDeskLnk(LPCWSTR pszDocument)
 {
-
   WCHAR tchExeFile[MAX_PATH] = { L'\0' };
   WCHAR tchDocTemp[MAX_PATH] = { L'\0' };
   WCHAR tchArguments[MAX_PATH+16] = { L'\0' };
@@ -1147,6 +1004,7 @@ bool PathCreateDeskLnk(LPCWSTR pszDocument)
 
   // init strings
   GetModuleFileName(NULL,tchExeFile,COUNTOF(tchExeFile));
+  PathCanonicalizeEx(tchExeFile, COUNTOF(tchExeFile));
 
   StringCchCopy(tchDocTemp,COUNTOF(tchDocTemp),pszDocument);
   PathQuoteSpaces(tchDocTemp);
@@ -1215,7 +1073,7 @@ bool PathCreateFavLnk(LPCWSTR pszName,LPCWSTR pszTarget,LPCWSTR pszDir)
   PathCchAppend(tchLnkFileName,COUNTOF(tchLnkFileName),pszName);
   StringCchCat(tchLnkFileName,COUNTOF(tchLnkFileName),L".lnk");
 
-  if (PathFileExists(tchLnkFileName))
+  if (PathIsExistingFile(tchLnkFileName))
     return false;
 
   if (SUCCEEDED(CoCreateInstance(&CLSID_ShellLink,NULL,
@@ -1331,6 +1189,8 @@ bool TrimStringW(LPWSTR lpString)
 //
 //  ExtractFirstArgument()
 //
+
+
 bool ExtractFirstArgument(LPCWSTR lpArgs, LPWSTR lpArg1, LPWSTR lpArg2, int len)
 {
   StringCchCopy(lpArg1, len, lpArgs);
@@ -1350,6 +1210,10 @@ bool ExtractFirstArgument(LPCWSTR lpArgs, LPWSTR lpArg1, LPWSTR lpArg2, int len)
   LPWSTR psz;
   if (bQuoted) {
     psz = StrChr(lpArg1, L'\"');
+    // skip esc'd quotes
+    while (psz && (psz[-1] == L'\\')) {
+      psz = StrChr(psz + 1, L'\"');
+    }
   }
   else {
     psz = StrChr(lpArg1, L' ');
@@ -1361,6 +1225,7 @@ bool ExtractFirstArgument(LPCWSTR lpArgs, LPWSTR lpArg1, LPWSTR lpArg2, int len)
     }
   }
   TrimSpcW(lpArg1);
+  UnSlashChar(lpArg1, L'"');
 
   if (lpArg2) {
     TrimSpcW(lpArg2);
@@ -1424,7 +1289,7 @@ void PathFixBackslashes(LPWSTR lpsz)
 //
 void ExpandEnvironmentStringsEx(LPWSTR lpSrc, DWORD dwSrc)
 {
-  WCHAR szBuf[HUGE_BUFFER];
+  WCHAR szBuf[XXXL_BUFFER];
   if (ExpandEnvironmentStrings(lpSrc, szBuf, COUNTOF(szBuf))) {
     StringCchCopyN(lpSrc, dwSrc, szBuf, COUNTOF(szBuf));
   }
@@ -1436,12 +1301,22 @@ void ExpandEnvironmentStringsEx(LPWSTR lpSrc, DWORD dwSrc)
 //  PathCanonicalizeEx()
 //
 //
-void PathCanonicalizeEx(LPWSTR lpszPath, DWORD cchBuffer)
+bool PathCanonicalizeEx(LPWSTR lpszPath, DWORD cchPath)
 {
-  WCHAR szDst[MAX_PATH] = { L'\0' };
-  if (PathCchCanonicalize(szDst, MAX_PATH, lpszPath) == S_OK) {
-    StringCchCopy(lpszPath, cchBuffer, szDst);
+  WCHAR filePath[MAX_PATH] = { L'\0' };
+  StringCchCopyN(filePath, COUNTOF(filePath), lpszPath, cchPath);
+
+  ExpandEnvironmentStringsEx(filePath, COUNTOF(filePath));
+  
+  if (PathIsRelative(filePath))
+  {
+    WCHAR tchModule[MAX_PATH] = { L'\0' };
+    GetModuleFileName(NULL, tchModule, COUNTOF(tchModule));
+    PathCchRemoveFileSpec(tchModule, COUNTOF(tchModule));
+    PathCchAppend(tchModule, COUNTOF(tchModule), lpszPath);
+    StringCchCopyN(filePath, COUNTOF(filePath), tchModule, COUNTOF(tchModule));
   }
+  return (PathCchCanonicalize(lpszPath, cchPath, filePath) == S_OK);
 }
 
 
@@ -1472,7 +1347,7 @@ DWORD GetLongPathNameEx(LPWSTR lpszPath, DWORD cchBuffer)
 static DWORD_PTR _SHGetFileInfoEx(LPCWSTR pszPath, DWORD dwFileAttributes,
   SHFILEINFO* psfi, UINT cbFileInfo, UINT uFlags)
 {
-  if (PathFileExists(pszPath))
+  if (PathIsExistingFile(pszPath))
   {
     DWORD_PTR dw = SHGetFileInfo(pszPath, dwFileAttributes, psfi, cbFileInfo, uFlags);
     if (StringCchLenW(psfi->szDisplayName, COUNTOF(psfi->szDisplayName)) < StringCchLen(PathFindFileName(pszPath), MAX_PATH))
@@ -1513,7 +1388,6 @@ void PathGetDisplayName(LPWSTR lpszDestPath, DWORD cchDestBuffer, LPCWSTR lpszSo
 DWORD NormalizePathEx(LPWSTR lpszPath, DWORD cchBuffer, bool bRealPath, bool bSearchPathIfRelative)
 {
   WCHAR tmpFilePath[MAX_PATH] = { L'\0' };
-
   StringCchCopyN(tmpFilePath, COUNTOF(tmpFilePath), lpszPath, cchBuffer);
   ExpandEnvironmentStringsEx(tmpFilePath, COUNTOF(tmpFilePath));
   
@@ -1524,7 +1398,7 @@ DWORD NormalizePathEx(LPWSTR lpszPath, DWORD cchBuffer, bool bRealPath, bool bSe
     StringCchCopyN(lpszPath, cchBuffer, Globals.WorkingDirectory, COUNTOF(Globals.WorkingDirectory));
     PathCchAppend(lpszPath, cchBuffer, tmpFilePath);
     if (bSearchPathIfRelative) {
-      if (!PathFileExists(lpszPath)) {
+      if (!PathIsExistingFile(lpszPath)) {
         PathStripPath(tmpFilePath);
         if (SearchPath(NULL, tmpFilePath, NULL, cchBuffer, lpszPath, NULL) == 0) {
           StringCchCopy(lpszPath, cchBuffer, tmpFilePath);
@@ -1641,10 +1515,8 @@ size_t FormatNumberStr(LPWSTR lpNumberStr, size_t cch, int fixedWidth)
 bool SetDlgItemIntEx(HWND hwnd,int nIdItem,UINT uValue)
 {
   WCHAR szBuf[64] = { L'\0' };
-
   StringCchPrintf(szBuf,COUNTOF(szBuf),L"%u",uValue);
   FormatNumberStr(szBuf, COUNTOF(szBuf), 0);
-
   return(SetDlgItemText(hwnd,nIdItem,szBuf));
 }
 
@@ -1656,17 +1528,17 @@ bool SetDlgItemIntEx(HWND hwnd,int nIdItem,UINT uValue)
 UINT GetDlgItemTextW2MB(HWND hDlg, int nIDDlgItem, LPSTR lpString, int nMaxCount)
 {
   WCHAR wsz[FNDRPL_BUFFER] = { L'\0' };
-  UINT uRet = GetDlgItemTextW(hDlg, nIDDlgItem, wsz, COUNTOF(wsz));
-  ZeroMemory(lpString,nMaxCount);
+  UINT const uRet = GetDlgItemTextW(hDlg, nIDDlgItem, wsz, COUNTOF(wsz));
+  ZeroMemory(lpString, nMaxCount);
   WideCharToMultiByte(Encoding_SciCP, 0, wsz, -1, lpString, nMaxCount - 1, NULL, NULL);
   return uRet;
 }
 
-UINT SetDlgItemTextMB2W(HWND hDlg, int nIDDlgItem, LPSTR lpString)
+UINT SetDlgItemTextMB2W(HWND hDlg, int nIDDlgItem, LPCSTR lpString)
 { 
   WCHAR wsz[FNDRPL_BUFFER] = { L'\0' };
   MultiByteToWideChar(Encoding_SciCP, 0, lpString, -1, wsz, (int)COUNTOF(wsz));
-  return SetDlgItemTextW(hDlg, nIDDlgItem, wsz);
+  return SetDlgItemText(hDlg, nIDDlgItem, wsz);
 }
 
 LRESULT ComboBox_AddStringMB2W(HWND hwnd, LPCSTR lpString)
@@ -1684,9 +1556,6 @@ LRESULT ComboBox_AddStringMB2W(HWND hwnd, LPCSTR lpString)
 UINT CodePageFromCharSet(const UINT uCharSet)
 {
   if (ANSI_CHARSET == uCharSet) {
-    if (Globals.uConsoleCodePage != 0) {
-      return Globals.uConsoleCodePage;
-    }
     CPINFOEX cpinfo; ZeroMemory(&cpinfo, sizeof(CPINFOEX));
     if (GetCPInfoEx(CP_THREAD_ACP, 0, &cpinfo)) {
       return cpinfo.CodePage;
@@ -1701,7 +1570,7 @@ UINT CodePageFromCharSet(const UINT uCharSet)
   return GetACP(); // fallback: systems locale ANSI CP
 }
 
-
+#if 0
 //=============================================================================
 //
 //  CharSetFromCodePage()
@@ -1713,14 +1582,14 @@ UINT CharSetFromCodePage(const UINT uCodePage) {
   }
   return(ANSI_CHARSET);
 }
-
+#endif
 
 /**
  * Convert C style \0oo into their indicated characters.
  * This is used to get control characters into the regular expresion engine
  * w/o interfering with group referencing ('\0').
  */
-unsigned int UnSlashLowOctal(char* s) {
+ptrdiff_t UnSlashLowOctal(char* s) {
   char* sStart = s;
   char* o = s;
   while (*s) {
@@ -1739,132 +1608,7 @@ unsigned int UnSlashLowOctal(char* s) {
       ++s;
   }
   *o = '\0';
-  return (unsigned int)(o - sStart);
-}
-
-
-/*
- * transform control chars into backslash sequence
- */
-size_t SlashA(LPSTR pchOutput, size_t cchOutLen, LPCSTR pchInput)
-{
-  if (!pchOutput || cchOutLen < 2 || !pchInput) { return 0; }
-
-  size_t i = 0;
-  size_t k = 0;
-  size_t const maxcnt = cchOutLen - 2;
-  while ((pchInput[k] != '\0') && (i < maxcnt))
-  {
-    switch (pchInput[k]) {
-      case '\\':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = '\\';
-        break;
-      case '\n':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = 'n';
-        break;
-      case '\r':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = 'r';
-        break;
-      case '\t':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = 't';
-        break;
-      case '\f':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = 'f';
-        break;
-      case '\v':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = 'v';
-        break;
-      case '\a':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = 'a';
-        break;
-      case '\b':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = 'b';
-        break;
-      case '\x1B':
-        pchOutput[i++] = '\\';
-        pchOutput[i++] = 'e';
-        break;
-      default:
-        pchOutput[i++] = pchInput[k];
-        break;
-    }
-    ++k;
-  }
-  pchOutput[i] = pchInput[k];
-  // ensure string end
-  if (pchInput[k] != '\0') { 
-    pchOutput[++i] = '\0';
-  }
-  return i;
-}
-
-
-size_t SlashW(LPWSTR pchOutput, size_t cchOutLen, LPCWSTR pchInput)
-{
-  if (!pchOutput || cchOutLen < 2 || !pchInput) { return 0; }
-
-  size_t i = 0;
-  size_t k = 0;
-  size_t const maxcnt = cchOutLen - 2;
-  while ((pchInput[k] != L'\0') && (i < maxcnt))
-  {
-    switch (pchInput[k]) {
-      case L'\\':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L'\\';
-        break;
-      case L'\n':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L'n';
-        break;
-      case L'\r':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L'r';
-        break;
-      case L'\t':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L't';
-        break;
-      case L'\f':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L'f';
-        break;
-      case L'\v':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L'v';
-        break;
-      case L'\a':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L'a';
-        break;
-      case L'\b':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L'b';
-        break;
-      case L'\x1B':
-        pchOutput[i++] = L'\\';
-        pchOutput[i++] = L'e';
-        break;
-      default:
-        pchOutput[i++] = pchInput[k];
-        break;
-    }
-    ++k;
-  }
-  pchOutput[i] = pchInput[k];
-  // ensure string end
-  if (pchInput[k] != L'\0') {
-    pchOutput[++i] = L'\0';
-  }
-  return i;
+  return (ptrdiff_t)(o - sStart);
 }
 
 
@@ -1900,6 +1644,8 @@ size_t UnSlashA(LPSTR pchInOut, UINT cpEdit)
         *o = '\t';
       else if (*s == 'v')
         *o = '\v';
+      else if (*s == '"')
+        *o = '"';
       else if (*s == '\\')
         *o = '\\';
       else if (*s == 'x' || *s == 'u') {
@@ -1964,8 +1710,67 @@ size_t UnSlashA(LPSTR pchInOut, UINT cpEdit)
   return (size_t)((ptrdiff_t)(o - sStart));
 }
 
-size_t UnSlashW(LPWSTR pchInOut)
-{
+
+//=============================================================================
+
+size_t SlashCtrlW(LPWSTR pchOutput, size_t cchOutLen, LPCWSTR pchInput) {
+  if (!pchOutput || cchOutLen < 2 || !pchInput) {
+    return 0;
+  }
+
+  size_t i = 0;
+  size_t k = 0;
+  size_t const maxcnt = cchOutLen - 2;
+  while ((pchInput[k] != L'\0') && (i < maxcnt)) {
+    switch (pchInput[k]) {
+    case L'\n':
+      pchOutput[i++] = L'\\';
+      pchOutput[i++] = L'n';
+      break;
+    case L'\r':
+      pchOutput[i++] = L'\\';
+      pchOutput[i++] = L'r';
+      break;
+    case L'\t':
+      pchOutput[i++] = L'\\';
+      pchOutput[i++] = L't';
+      break;
+    case L'\f':
+      pchOutput[i++] = L'\\';
+      pchOutput[i++] = L'f';
+      break;
+    case L'\v':
+      pchOutput[i++] = L'\\';
+      pchOutput[i++] = L'v';
+      break;
+    case L'\a':
+      pchOutput[i++] = L'\\';
+      pchOutput[i++] = L'a';
+      break;
+    case L'\b':
+      pchOutput[i++] = L'\\';
+      pchOutput[i++] = L'b';
+      break;
+    case L'\x1B':
+      pchOutput[i++] = L'\\';
+      pchOutput[i++] = L'e';
+      break;
+    default:
+      pchOutput[i++] = pchInput[k];
+      break;
+    }
+    ++k;
+  }
+  pchOutput[i] = pchInput[k];
+  // ensure string end
+  if (pchInput[k] != L'\0') {
+    pchOutput[++i] = L'\0';
+  }
+  return i;
+}
+
+
+size_t UnSlashCtrlW(LPWSTR pchInOut) {
   LPWSTR s = pchInOut;
   LPWSTR o = pchInOut;
   LPCWSTR const sStart = pchInOut;
@@ -1973,67 +1778,27 @@ size_t UnSlashW(LPWSTR pchInOut)
   while (*s) {
     if (*s == '\\') {
       ++s;
-      if (*s == L'a')
-        *o = L'\a';
-      else if (*s == L'b')
-        *o = L'\b';
-      else if (*s == L'e')
-        *o = L'\x1B';
-      else if (*s == L'f')
-        *o = L'\f';
-      else if (*s == L'n')
+      if (*s == L'n')
         *o = L'\n';
       else if (*s == L'r')
         *o = L'\r';
       else if (*s == L't')
         *o = L'\t';
+      else if (*s == L'f')
+        *o = L'\f';
       else if (*s == L'v')
         *o = L'\v';
-      else if (*s == L'\\')
-        *o = L'\\';
-      else if (*s == L'x' || *s == L'u') {
-        bool bShort = (*s == L'x');
-        WCHAR val = L'\0';
-        int hex = GetHexDigitW(*(s + 1));
-        if (hex >= 0) {
-          val = (WCHAR)hex;
-          hex = GetHexDigitW(*(++s + 1));
-          if (hex >= 0) {
-            ++s;
-            val *= 16;
-            val += (WCHAR)hex;
-            if (!bShort) {
-              hex = GetHexDigitW(*(s + 1));
-              if (hex >= 0) {
-                val *= 16;
-                val += (WCHAR)hex;
-                hex = GetHexDigitW(*(++s + 1));
-                if (hex >= 0) {
-                  ++s;
-                  val *= 16;
-                  val += (WCHAR)hex;
-                }
-              }
-            }
-          }
-
-          if (val) {
-            *o = val;
-          }
-          else
-            --o;
-        }
-        else
-          --o;
-      }
-      else {
-        //~*o = '\\';  *++o = *s;   // revert
+      else if (*s == L'a')
+        *o = L'\a';
+      else if (*s == L'b')
+        *o = L'\b';
+      else if (*s == L'e')
+        *o = L'\x1B';
+      else
         *o = *s;   // swallow single '\'
-      }
-    }
-    else
+    } else {
       *o = *s;
-
+    }
     ++o;
     if (*s) {
       ++s;
@@ -2042,6 +1807,35 @@ size_t UnSlashW(LPWSTR pchInOut)
   *o = '\0';
   return (size_t)((ptrdiff_t)(o - sStart));
 }
+//=============================================================================
+
+
+size_t UnSlashChar(LPWSTR pchInOut, WCHAR wch)
+{
+  LPCWSTR const sStart = pchInOut;
+
+  LPWSTR s = pchInOut;
+  LPWSTR o = pchInOut;
+  while (*s) {
+    if (*s == L'\\') {
+      ++s;
+      if (*s == wch)
+        *o++ = wch;
+      else {
+        *o++ = L'\\'; // restore
+        *o++ = *s;
+      }
+    }
+    else
+      *o++ = *s;
+    if (*s) {
+      ++s;
+    }
+  }
+  *o = L'\0';
+  return (size_t)((ptrdiff_t)(o - sStart));
+}
+
 
 /**
  *  check, if we have regex sub-group referencing 
@@ -2123,6 +1917,65 @@ void TransformMetaChars(char* pszInput, bool bRegEx, int iEOLMode)
   *o = '\0';
   StringCchCopyA(pszInput, FNDRPL_BUFFER, buffer);
 }
+
+
+//=============================================================================
+//
+//  Hex2Char() - zero('\0') terminated strings
+//  by Zufuliu
+//
+int Hex2Char(char* ch, int cnt)
+{
+  int cch = 0;
+  WCHAR* wch = (WCHAR*)AllocMem(cnt * sizeof(WCHAR), HEAP_ZERO_MEMORY);
+  if (wch) {
+    int ci  = 0;
+    char* p = ch;
+    while (*p) {
+      if (*p == '\\') {
+        p++;
+        if ((*p == 'x' || *p == 'u') || 
+            (*p == 'X' || *p == 'U')) {
+          p++;
+          ci      = 0;
+          int ucc = 0;
+          while (*p && (ucc++ < MAX_ESCAPE_HEX_DIGIT)) {
+            if (*p >= '0' && *p <= '9') {
+              ci = ci * 16 + (*p++ - '0');
+            }
+            else if (*p >= 'a' && *p <= 'f') {
+              ci = ci * 16 + (*p++ - 'a') + 10;
+            }
+            else if (*p >= 'A' && *p <= 'F') {
+              ci = ci * 16 + (*p++ - 'A') + 10;
+            }
+            else {
+              break;
+            }
+          }
+        }
+        else {
+          ci = *p++;
+        }
+      }
+      else {
+        ci = *p++;
+      }
+      wch[cch++] = (WCHAR)ci;
+      if (ci == 0) {
+        break;
+      }
+    }
+    wch[cch] = L'\0';
+
+    cch = WideCharToMultiByte(Encoding_SciCP, 0, wch, -1, ch, cnt, NULL, NULL) - 1; // '\0'
+
+    FreeMem(wch);
+  }
+  return cch;
+}
+
+
 
 #ifdef WC2MB_EX
 //=============================================================================
@@ -2500,7 +2353,7 @@ void UrlUnescapeEx(LPWSTR lpURL, LPWSTR lpUnescaped, DWORD* pcchUnescaped)
   UrlUnescape(lpURL, lpUnescaped, pcchUnescaped, URL_UNESCAPE_AS_UTF8);
 #else
   char* outBuffer = AllocMem(*pcchUnescaped + 1, HEAP_ZERO_MEMORY);
-  if (outBuffer == NULL) {
+  if (!outBuffer) {
     return;
   }
   DWORD const outLen = *pcchUnescaped;
@@ -2609,14 +2462,28 @@ int ReadStrgsFromCSV(LPCWSTR wchCSVStrg, prefix_t sMatrix[], int iCount, int iLe
 //  ReadVectorFromString()
 //
 //
-int ReadVectorFromString(LPCWSTR wchStrg, int iVector[], int iCount, int iMin, int iMax, int iDefault)
+static int _cmpifunc(const void* a, const void* b) { return (*(int*)a - *(int*)b); }
+
+size_t ReadVectorFromString(LPCWSTR wchStrg, int iVector[], size_t iCount, int iMin, int iMax, int iDefault, bool ordered)
 {
   static WCHAR wchTmpBuff[SMALL_BUFFER];
 
   StringCchCopyW(wchTmpBuff, COUNTOF(wchTmpBuff), wchStrg);
   TrimSpcW(wchTmpBuff);
+
+  // replace ',' and ';' by space
+  WCHAR* s = wchTmpBuff;
+  while (s) {
+    s = StrChr(wchTmpBuff, L',');  // next
+    if (s && *s) { *s++ = L' '; }
+  }
+  s = wchTmpBuff;
+  while (s) {
+    s = StrChr(wchTmpBuff, L';');  // next
+    if (s && *s) { *s++ = L' '; }
+  }
   // ensure single spaces only
-  WCHAR *p = StrStr(wchTmpBuff, L"  ");
+  const WCHAR *p = StrStr(wchTmpBuff, L"  ");
   while (p) {
     MoveMemory((WCHAR*)p, (WCHAR*)p + 1, (StringCchLenW(p,0) + 1) * sizeof(WCHAR));
     p = StrStr(wchTmpBuff, L"  ");  // next
@@ -2629,22 +2496,49 @@ int ReadVectorFromString(LPCWSTR wchStrg, int iVector[], int iCount, int iMin, i
   wchTmpBuff[len + 1] = L'\0'; // double zero at the end
 
   // fill default
-  for (int i = 0; i < iCount; ++i) { iVector[i] = iDefault; }
+  for (size_t i = 0; i < iCount; ++i) { iVector[i] = iDefault; }
   // insert values
-  int n = 0;
+  size_t n = 0;
   p = wchTmpBuff;
   while (*p) {
     int iValue;
-    if (swscanf_s(p, L"%i", &iValue) == 1) {
-      if (n < iCount) {
+    if (n < iCount) {
+      //if (swscanf_s(p, L"%i", &iValue) == 1) {
+      if (StrToIntEx(p, STIF_DEFAULT, &iValue)) {
         iVector[n++] = clampi(iValue, iMin, iMax);
       }
     }
     p = StrEnd(p,0) + 1;
   }
+
+  if (ordered) {
+    qsort(iVector, n, sizeof(int), _cmpifunc);
+  }
+
   return n;
 }
 
+size_t NormalizeColumnVector(LPSTR chStrg_in, LPWSTR wchStrg_out, size_t iCount)
+{
+  if (chStrg_in) {
+    MultiByteToWideChar(CP_UTF8, 0, chStrg_in, -1, wchStrg_out, (int)iCount);
+  }
+  StrTrim(wchStrg_out, L"\"'");
+
+  int* intVector = (int*)AllocMem(iCount * sizeof(int), HEAP_ZERO_MEMORY);
+  if (!intVector) { return 0; }
+
+  size_t const cnt = ReadVectorFromString(wchStrg_out, intVector, iCount, 0, LONG_LINES_MARKER_LIMIT, 0, true);
+
+  WCHAR col[32];
+  wchStrg_out[0] = L'\0';
+  for (size_t i = 0; i < cnt; ++i) {
+    StringCchPrintf(col, COUNTOF(col), ((i == 0) ? L"%i" : L" %i"), intVector[i]);
+    StringCchCat(wchStrg_out, iCount, col);
+  }
+  FreeMem(intVector);
+  return cnt;
+}
 
 //=============================================================================
 //
@@ -2712,5 +2606,8 @@ void Float2String(float fValue, LPWSTR lpszStrg, int cchSize)
   else
     StringCchPrintf(lpszStrg, cchSize, L"%i", float2int(fValue));
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 ///   End of Helpers.c   ///

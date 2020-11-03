@@ -13,6 +13,9 @@ namespace Scintilla {
 struct FontSpecification {
 	const char *fontName;
 	int weight;
+	// >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
+	int stretch;
+	// <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
 	bool italic;
 	int size;
 	int characterSet;
@@ -20,6 +23,9 @@ struct FontSpecification {
 	FontSpecification() noexcept :
 		fontName(nullptr),
 		weight(SC_WEIGHT_NORMAL),
+		// >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
+		stretch(SC_FONT_STRETCH_NORMAL),
+		// <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
 		italic(false),
 		size(10 * SC_FONT_SIZE_MULTIPLIER),
 		characterSet(0),
@@ -62,6 +68,9 @@ public:
 	ColourDesired back;
 	bool eolFilled;
 	bool underline;
+// >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
+	bool strike;
+// <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
 	enum ecaseForced {caseMixed, caseUpper, caseLower, caseCamel};
 	ecaseForced caseForce;
 	bool visible;
@@ -71,19 +80,21 @@ public:
 	FontAlias font;
 
 	Style();
-	Style(const Style &source);
+	Style(const Style &source) noexcept;
 	Style(Style &&) = delete;
 	~Style();
-	Style &operator=(const Style &source);
+	Style &operator=(const Style &source) noexcept;
 	Style &operator=(Style &&) = delete;
 	void Clear(ColourDesired fore_, ColourDesired back_,
 	           int size_,
 	           const char *fontName_, int characterSet_,
-	           int weight_, bool italic_, bool eolFilled_,
-	           bool underline_, ecaseForced caseForce_,
-	           bool visible_, bool changeable_, bool hotspot_);
-	void ClearTo(const Style &source);
-	void Copy(Font &font_, const FontMeasurements &fm_);
+	           // >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
+	           int weight_, int stretch_, bool italic_, bool eolFilled_,
+	           bool underline_, bool strike_, ecaseForced caseForce_,
+	           // <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
+	           bool visible_, bool changeable_, bool hotspot_) noexcept;
+	void ClearTo(const Style &source) noexcept;
+	void Copy(const Font &font_, const FontMeasurements &fm_) noexcept;
 	bool IsProtected() const noexcept { return !(changeable && visible);}
 };
 

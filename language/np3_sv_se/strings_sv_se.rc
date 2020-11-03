@@ -92,6 +92,7 @@ BEGIN
     IDT_VIEW_TOGGLE_VIEW     "Växla vy"
     IDT_VIEW_CHASING_DOCTAIL "Övervaknigslogg"
     IDT_VIEW_PIN_ON_TOP      "Alltid överst"
+    IDT_GREP_WIN_TOOL        "Sök i filer"
 END
 
 STRINGTABLE
@@ -126,7 +127,9 @@ STRINGTABLE
 BEGIN
     IDS_MUI_ERR_LOADFILE    "Fel vid laddning ""%s""."
     IDS_MUI_ERR_SAVEFILE    "Fel vid sparande ""%s""."
+    IDS_MUI_ERR_DLG_FORMAT  "Fel '%s', orsak:\n%s(ID:%d)\n"
     IDS_MUI_ERR_BROWSE      "Inget plugin för filbläddring hittades.\nMinipath filbläddrare kan laddas ner från https://rizonesoft.com."
+    IDS_MUI_ERR_GREPWIN     "Inget sökplugin hittades.\ngrepWinNP3 filsökningsplugin kan hämtas från https://rizonesoft.com."
     IDS_MUI_ERR_MRUDLG      "Tillgång saknas för vald fil!\nVill du ta bort den från listan?"
     IDS_MUI_ERR_CREATELINK  "Fel vi skapande av skrivbordslänk."
     IDS_MUI_ERR_PREVWINDISABLED
@@ -147,7 +150,7 @@ BEGIN
     IDS_MUI_ERR_ADMINEXE    "Ingen exekverbar fil för administratör kan hittas.\nGå till websidan https://rizonesoft.com?"
     IDS_MUI_WARN_LOAD_BIG_FILE
                             "Vill du öppna denna stora fil?\n\t(storlek: %s >= %s)!\n(Stil och syntaxmarkering kommer inte användas!)"
-    IDS_MUI_ERR_FILE_TOO_LARGE 
+    IDS_MUI_ERR_FILE_TOO_LARGE
                             "Kan inte hantera så stor fil (storlek: %s)!"
     IDS_MUI_WARN_UNKNOWN_EXT
                             "Okändt filnamnstillägg (%s)!\nVill du fortsätta ändå?"
@@ -155,13 +158,15 @@ BEGIN
     IDS_MUI_EOLMODENAME_CRLF   "Windows (CR+LF)"
     IDS_MUI_EOLMODENAME_LF     "Unix/Mac (LF)"
     IDS_MUI_EOLMODENAME_CR     "Gammal Mac (CR)"
+    IDS_MUI_WARN_NORMALIZE_EOLS
+                            "Vill du ändra alla radslut till '%s'?"
 END
 
 STRINGTABLE
 BEGIN
     IDS_MUI_SELRECT         "Åtgärden kan inte utföras inom en rektangulär markering."
-    IDS_MUI_SELMULTI        "This operation can't be performed within a multi-selection."
-    IDS_MUI_SELRECTORMULTI  "This operation can't be performed within a rectangular or multi-selection."
+    IDS_MUI_SELMULTI        "Åtgärden kan inte utföras med multipla markeringar."
+    IDS_MUI_SELRECTORMULTI  "Åtgärden kan inte utföras med en rektangular markering eller multipla markeringar."
     IDS_MUI_BUFFERTOOSMALL  "Åtgärden kan inte utföras eftersom raderna är för långa."
     IDS_MUI_FIND_WRAPFW     "Kommit till slutet av dokumentet, börjar från början."
     IDS_MUI_FIND_WRAPRE     "Kommit till slutet av dokumentet, startar om sökning från slutet."
@@ -177,6 +182,8 @@ BEGIN
     IDS_MUI_SAVEDSETTINGS   "Inställningarna har sparats."
     IDS_MUI_CREATEINI_FAIL  "Kunde inte skapa konfigurationsfil."
     IDS_MUI_WRITEINI_FAIL   "Kunde inte skriva inställningar till konigurationsfil."
+    IDS_MUI_INIFILE_READONLY
+                            "Konfigurationsfilen är ej skrivbar - vill du ignorera och implementera inställningar?"
     IDS_MUI_SETTINGSNOTSAVED
                             "Inga existerande konfigurationsfiler kunde hittas.\nFör att spara dina stiländringar, spara nu (F7) eller gå tillbaka till schemakonfiguration (Ctrl+F12) och exportera din stilmall."
 END
@@ -186,12 +193,13 @@ BEGIN
     IDS_MUI_RELOADSETTINGS   "Vill du ladda om applikationen med sparade inställningar?\n\n%s"
     IDS_MUI_RELOADCFGSEX     "Om du fortsätter utan att starta om kommer inställningarna inte sparas!"
     IDS_MUI_EXPORT_FAIL      "Fel vid exportering av stilinställningar ""%s""."
-    IDS_MUI_REGEX_INVALID    "Fil vid utvärdering av reguljärt uttryck. Uttrycket är ogiltigt!"
+    IDS_MUI_REGEX_INVALID    "Fel vid utvärdering av reguljärt uttryck. Uttrycket är ogiltigt!"
     IDS_MUI_DROP_NO_FILE     "Inget giltigt filnamn kunde hittas.\nOm du drar-och-släpper från en 32-bits applikation,\nvar vänligt släpp på Notepad3s verktygsfält."
     IDS_MUI_URL_OPEN_FILE    "\nAlt + Klicka för att öppna fil."
     IDS_MUI_URL_OPEN_BROWSER "\nCtrl + Klicka för att öppna länken i webbläsaren."
     IDS_MUI_INF_PRSVFILEMODTM
                              "Bevarande av tidsstämpel för filmodifiering är aktiverad.\nInställningen är giltig för denna session!"
+    IDS_MUI_OUT_OFF_OCCMRK   "Inga fler markeringar (bokmärke/markering)!"
 END
 
 STRINGTABLE
@@ -244,10 +252,15 @@ STRINGTABLE
 BEGIN
     IDS_MUI_MENU_LANGUAGE   "Språk"
     IDS_MUI_MENU_THEMES     "Schemasamling"
-    IDM_THEMES_DEFAULT      "Fabriksåterställning"
-    IDM_THEMES_FILE_ITEM    "Standardinställningar"
+    IDM_THEMES_DEFAULT      "&Fabriksåterställning"
+    IDM_THEMES_FILE_ITEM    "&Standardinställningar"
     IDS_MUI_STATUSBAR_PREFIXES "Ln  ,Col  ,Sel  ,Sb  ,SLn  ,Occ  ,,,,,,,Ch  ,Repl  ,Eval  ,"
     IDS_MUI_STATUSBAR_POSTFIXES ",,,,,,,,,,,,,,,"
+    IDS_CLEAR_ALL           "Rensa alla"
+    IDS_MUI_CLEAR_FIND_HISTORY
+                            "Rensa sökhistorik"
+    IDS_MUI_CLEAR_REPL_HISTORY
+                            "Rensa ersättningshistorik"
 END
 
 STRINGTABLE
@@ -311,7 +324,7 @@ STRINGTABLE
 BEGIN
 
 IDS_MUI_ABOUT_RTF_0  "{\
-\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}}\
+\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Segoe UI;}}\
 {\\colortbl ;\\red80\\green160\\blue80;}\
 \\tx3500\\tx7000\\fs18\
 \\cf0 \\fs20\\b1\\ul1 Utveckling:\\ul0\\b0\\fs18\\par\
@@ -332,44 +345,8 @@ IDS_MUI_ABOUT_RTF_5  "\
 \\cf0 \\fs20\\b1\\ul1 Licenser:\\ul0\\b0\\fs18\\par\
 "
 
-IDS_MUI_ABOUT_RTF_6  "\
-\\cf0 \\fs20\\b1\\ul1 Notepad3 Licens:\\ul0\\b0\\fs18\\par\
-\\cf0 \\par\
-\\cf0 Notepad3 and MiniPath Copyright \\u0169   2008-2020 Rizonesoft, All rights reserved.\\par\
-\\cf0 https://www.rizonesoft.com\\par\
-\\cf0 \\par\
-\\cf0 Redistribution and use in source and binary forms, with or without modification,\\par\
-\\cf0 are permitted provided that the following conditions are met:\\par\
-\\cf0 \\par\
-\\cf0 1. Redistributions of source code must retain the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer.\\par\
-\\cf0 \\par\
-\\cf0 2. Redistributions in binary form must reproduce the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer in the\\par\
-\\cf0 documentation and/or other materials provided with the distribution.\\par\
-\\cf0 \\par\
-\\cf0 3. Neither the name of Florian Balmer nor the names of its contributors\\par\
-\\cf0 may be used to endorse or promote products derived from this software\\par\
-\\cf0 without specific prior written permission.\\par\
-\\cf0 \\par\
-\\cf0 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\\par\
-\\cf0 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED\\par\
-\\cf0 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\\par\
-\\cf0 PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\\par\
-\\cf0 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\\par\
-\\cf0 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\\par\
-\\cf0 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\\par\
-\\cf0 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\\par\
-\\cf0 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\\par\
-\\cf0 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\\par\
-\\cf0 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\\par\
-}"
-
 END
 
-//
-// Lines added to synchronize the number of lines of all "strings_xx_yy.rc" files.
-//
 #endif    // Swedish (Sweden) resources
 /////////////////////////////////////////////////////////////////////////////
 

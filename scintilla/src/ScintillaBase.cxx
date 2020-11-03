@@ -72,8 +72,7 @@ ScintillaBase::ScintillaBase() {
 #endif
 }
 
-ScintillaBase::~ScintillaBase() {
-}
+ScintillaBase::~ScintillaBase() = default;
 
 void ScintillaBase::Finalise() {
 	Editor::Finalise();
@@ -304,7 +303,9 @@ void ScintillaBase::AutoCompleteStart(Sci::Position lenEntered, const char *list
 	rcac.right = rcac.left + widthLB;
 	rcac.bottom = static_cast<XYPOSITION>(std::min(static_cast<int>(rcac.top) + heightLB, static_cast<int>(rcPopupBounds.bottom)));
 	ac.lb->SetPositionRelative(rcac, &wMain);
+	// >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
 	ac.lb->SetColour(vs.styles[STYLE_DEFAULT].fore, vs.styles[STYLE_DEFAULT].back);
+	// <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
 	ac.lb->SetFont(vs.styles[STYLE_DEFAULT].font);
 	const unsigned int aveCharWidth = static_cast<unsigned int>(vs.styles[STYLE_DEFAULT].aveCharWidth);
 	ac.lb->SetAverageCharWidth(aveCharWidth);
@@ -585,7 +586,7 @@ public:
 	void PropSet(const char *key, const char *val);
 	const char *PropGet(const char *key) const;
 	int PropGetInt(const char *key, int defaultValue=0) const;
-	int PropGetExpanded(const char *key, char *result) const;
+	size_t PropGetExpanded(const char *key, char *result) const;
 
 	int LineEndTypesSupported() override;
 	int AllocateSubStyles(int styleBase, int numberStyles);
@@ -630,9 +631,9 @@ void LexState::SetInstance(ILexer5 *instance_) {
 
 LexState *ScintillaBase::DocumentLexState() {
 	if (!pdoc->GetLexInterface()) {
-		pdoc->SetLexInterface(new LexState(pdoc));
+		pdoc->SetLexInterface(std::make_unique<LexState>(pdoc));
 	}
-	return static_cast<LexState *>(pdoc->GetLexInterface());
+	return dynamic_cast<LexState *>(pdoc->GetLexInterface());
 }
 
 void LexState::SetLexerModule(const LexerModule *lex) {
@@ -687,6 +688,18 @@ void LexState::SetWordList(int n, const char *wl) {
 			pdoc->ModifiedAt(firstModification);
 		}
 	}
+}
+
+int LexState::GetIdentifier() const {
+	if (lexCurrent) {
+		return lexCurrent->GetLanguage();
+	}
+	if (instance) {
+		if (instance->Version() >= lvRelease5) {
+			return instance->GetIdentifier();
+		}
+	}
+	return SCLEX_CONTAINER;
 }
 
 const char *LexState::GetName() const {
@@ -751,7 +764,7 @@ int LexState::PropGetInt(const char *key, int defaultValue) const {
 	return props.GetInt(key, defaultValue);
 }
 
-int LexState::PropGetExpanded(const char *key, char *result) const {
+size_t LexState::PropGetExpanded(const char *key, char *result) const {
 	return props.GetExpanded(key, result);
 }
 
@@ -857,7 +870,7 @@ const char *LexState::DescriptionOfStyle(int style) {
 }
 
 void ScintillaBase::NotifyStyleToNeeded(Sci::Position endStyleNeeded) {
-	if (DocumentLexState()->lexLanguage != SCLEX_CONTAINER) {
+	if (DocumentLexState()->GetIdentifier() != SCLEX_CONTAINER) {
 		const Sci::Line lineEndStyled =
 			pdoc->SciLineFromPosition(pdoc->GetEndStyled());
 		const Sci::Position endStyled =
@@ -1014,7 +1027,7 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 		return ac.GetTypesep();
 
 	case SCI_CALLTIPSHOW:
-		CallTipShow(LocationFromPosition(static_cast<Sci::Position>(wParam)),
+		CallTipShow(LocationFromPosition(wParam),
 			ConstCharPtrFromSPtr(lParam));
 		break;
 
@@ -1029,11 +1042,11 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 		return ct.posStartCallTip;
 
 	case SCI_CALLTIPSETPOSSTART:
-		ct.posStartCallTip = static_cast<Sci::Position>(wParam);
+		ct.posStartCallTip = wParam;
 		break;
 
 	case SCI_CALLTIPSETHLT:
-		ct.SetHighlight(static_cast<int>(wParam), static_cast<int>(lParam));
+		ct.SetHighlight(wParam, lParam);
 		break;
 
 	case SCI_CALLTIPSETBACK:
@@ -1072,7 +1085,7 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 		break;
 
 	case SCI_GETLEXER:
-		return DocumentLexState()->lexLanguage;
+		return DocumentLexState()->GetIdentifier();
 
 	case SCI_SETILEXER:
 		DocumentLexState()->SetInstance(reinterpret_cast<ILexer5 *>(lParam));

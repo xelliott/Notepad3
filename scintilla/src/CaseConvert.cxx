@@ -591,15 +591,14 @@ class CaseConverter : public ICaseConverter {
 			return character < other.character;
 		}
 	};
-	typedef std::vector<CharacterConversion> CharacterToConversion;
+	using CharacterToConversion = std::vector<CharacterConversion>;
 	CharacterToConversion characterToConversion;
 	// The parallel arrays
 	std::vector<int> characters;
 	std::vector<ConversionString> conversions;
 
 public:
-	CaseConverter() noexcept {
-	}
+	CaseConverter() noexcept = default;
 	virtual ~CaseConverter() = default;
 	bool Initialised() const noexcept {
 		return !characters.empty();
@@ -716,7 +715,7 @@ void SetupConversions(enum CaseConversion conversion) {
 	const char *sComplex = complexCaseConversions;
 	while (*sComplex) {
 		// Longest ligature is 3 character so 5 for safety
-		const size_t lenUTF8 = 5*UTF8MaxBytes+1;
+		constexpr size_t lenUTF8 = 5*UTF8MaxBytes+1;
 		unsigned char originUTF8[lenUTF8]{};
 		char foldedUTF8[lenUTF8]{};
 		char lowerUTF8[lenUTF8]{};

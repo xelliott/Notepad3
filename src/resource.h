@@ -2,6 +2,13 @@
 // Microsoft Visual C++ generated include file.
 // Used by Notepad3.rc
 //
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x601  /*_WIN32_WINNT_WIN7*/
+#endif
+#ifndef WINVER
+#define WINVER 0x601  /*_WIN32_WINNT_WIN7*/
+#endif
+
 #ifndef IDC_STATIC
 #define IDC_STATIC                     (-1)
 #endif
@@ -45,6 +52,8 @@
 #define IDACC_SELTOPREV                 311
 #define IDACC_VIEWSCHEMECONFIG          312
 #define IDACC_PREVIEW                   313
+#define IDACC_CLEAR_FIND_HISTORY        314
+#define IDACC_CLEAR_REPL_HISTORY        315
 
 #define IDC_SETCURLEXERTV               402
 
@@ -60,7 +69,7 @@
 #include "../language/common_res.h"
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1

@@ -43,6 +43,9 @@ Thumbs.db
 /Build/Signing/Password.txt
 /distrib/Notepad3*.exe
 
+/packages
+/other_sln/packages
+
 /Version_*.cmd
 /Versions/build.txt
 /Versions/day.txt
@@ -59,13 +62,17 @@ Thumbs.db
 /np3portableapp/*.7z
 /np3portableapp/*.paf.exe
 /np3portableapp/_buildname.txt
+/np3portableapp/Signing_for*.cmd
+/np3portableapp/Signing_log*.txt
+/np3portableapp/Notepad3Portable/Data
 /np3portableapp/Notepad3Portable/Notepad3Portable.exe
 /np3portableapp/Notepad3Portable/App/AppInfo/appinfo.ini
 /np3portableapp/Notepad3Portable/App/DefaultData/settings
-/np3portableapp/Notepad3Portable/App/Notepad3/*.exe
+/np3portableapp/Notepad3Portable/App/Notepad3/Docs/*.txt
 /np3portableapp/Notepad3Portable/App/Notepad3/x64/*.exe
 /np3portableapp/Notepad3Portable/App/Notepad3/x64/lng
+/np3portableapp/Notepad3Portable/App/Notepad3/x64/grepWin/*.*
 /np3portableapp/Notepad3Portable/App/Notepad3/x86/*.exe
 /np3portableapp/Notepad3Portable/App/Notepad3/x86/lng
-/np3portableapp/Notepad3Portable/App/themes
-/np3portableapp/Notepad3Portable/Other/Help/*.txt
+/np3portableapp/Notepad3Portable/App/Notepad3/x86/grepWin/*.*
+

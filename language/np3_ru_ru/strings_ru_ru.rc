@@ -92,6 +92,7 @@ BEGIN
     IDT_VIEW_TOGGLE_VIEW     "Фокусировка просмотра"
     IDT_VIEW_CHASING_DOCTAIL "Слежение за файлом"
     IDT_VIEW_PIN_ON_TOP      "Поверх других окон"
+    IDT_GREP_WIN_TOOL        "Искать в файлах"
 END
 
 STRINGTABLE
@@ -126,7 +127,9 @@ STRINGTABLE
 BEGIN
     IDS_MUI_ERR_LOADFILE    "Ошибка загрузки «%s»."
     IDS_MUI_ERR_SAVEFILE    "Ошибка сохранения «%s»."
+    IDS_MUI_ERR_DLG_FORMAT  "Ошибка '%s', причина:\n%s(ID:%d)\n"
     IDS_MUI_ERR_BROWSE      "Не найден плагин браузера файлов.\nПлагин MiniPath можно загрузить с сайта https://rizonesoft.com."
+    IDS_MUI_ERR_GREPWIN     "Не найден плагин поиска в файлах.\nПлагин grepWinNP3 можно загрузить с сайта https://rizonesoft.com."
     IDS_MUI_ERR_MRUDLG      "Нет доступа к выбранному файлу!\nХотите удалить его из списка?"
     IDS_MUI_ERR_CREATELINK  "Ошибка создания ярлыка на Рабочем столе."
     IDS_MUI_ERR_PREVWINDISABLED
@@ -147,7 +150,7 @@ BEGIN
     IDS_MUI_ERR_ADMINEXE    "Не найден инструмент администратора\nПосетить сайт https://rizonesoft.com?"
     IDS_MUI_WARN_LOAD_BIG_FILE
                             "Вы уверены, что хотите открыть этот очень большой файл?\n\t(размер: %s >= %s)!\n(Стили и схема синтаксиса не будут применены!)"
-    IDS_MUI_ERR_FILE_TOO_LARGE 
+    IDS_MUI_ERR_FILE_TOO_LARGE
                             "Невозможно обработать этот большой файл (размер: %s)!"
     IDS_MUI_WARN_UNKNOWN_EXT
                             "Неизвестное расширения файла (%s)!\nПродолжить загрузку данных?"
@@ -155,6 +158,8 @@ BEGIN
     IDS_MUI_EOLMODENAME_CRLF   "Windows (CR+LF)"
     IDS_MUI_EOLMODENAME_LF     "Unix/Mac (LF)"
     IDS_MUI_EOLMODENAME_CR     "Old Mac (CR)"
+    IDS_MUI_WARN_NORMALIZE_EOLS
+                            "Хотите нормализовать все окончания строк в '%s'?"
 END
 
 STRINGTABLE
@@ -172,11 +177,13 @@ BEGIN
     IDS_MUI_READONLY_SAVE   "«%s» только для чтения. Сохранить в другой файл?"
     IDS_MUI_FILECHANGENOTIFY
                             "Этот файл был изменен внешней программой. Переоткрыть его?"
-    IDS_MUI_FILECHANGENOTIFY2 "Этот файл был удален. Сохранить заново?"
+    IDS_MUI_FILECHANGENOTIFY2 "Этот файл был удален. Пересохранить?"
     IDS_MUI_STICKYWINPOS    "Фиксированное положение окна включено. Любое новое окно Notepad3 будет запущено с текущими настройками положения."
     IDS_MUI_SAVEDSETTINGS   "Текущие настройки приложения были сохранены."
     IDS_MUI_CREATEINI_FAIL  "Ошибка создания конфигурационного файла."
     IDS_MUI_WRITEINI_FAIL   "Ошибка записи настроек в конфигурационный файл."
+    IDS_MUI_INIFILE_READONLY
+                            "Конфигурационный файл только для чтения - игнорировать и перезаписать настройки?"
     IDS_MUI_SETTINGSNOTSAVED
                             "Конфигурационный файл не найден.\nДля сохранения изменений стилей сохраните настройки (F7) или вернитесь к настройке схем (Ctrl+F12) и экспортируйте их."
 END
@@ -192,6 +199,7 @@ BEGIN
     IDS_MUI_URL_OPEN_BROWSER "\nCtrl + Click, чтобы открыть ссылку в браузере."
     IDS_MUI_INF_PRSVFILEMODTM
                              "Сохранение исходной метки времени изменения файла включено.\nЭта опция останется включенной для текущей сессии!"
+    IDS_MUI_OUT_OFF_OCCMRK   "Маркеры вхождения (закладка/отметка) на исходе!"
 END
 
 STRINGTABLE
@@ -244,10 +252,15 @@ STRINGTABLE
 BEGIN
     IDS_MUI_MENU_LANGUAGE   "&Язык"
     IDS_MUI_MENU_THEMES     "&Коллекция схем"
-    IDM_THEMES_DEFAULT      "Заводские настройки"
-    IDM_THEMES_FILE_ITEM    "Стандартные настройки"
+    IDM_THEMES_DEFAULT      "&Заводские настройки"
+    IDM_THEMES_FILE_ITEM    "&Стандартные настройки"
     IDS_MUI_STATUSBAR_PREFIXES "Ln  ,Col  ,Sel  ,Sb  ,SLn  ,Occ  ,,,,,,,Ch  ,Repl  ,Eval  ,"
     IDS_MUI_STATUSBAR_POSTFIXES ",,,,,,,,,,,,,,,"
+    IDS_CLEAR_ALL           "Очистить всё"
+    IDS_MUI_CLEAR_FIND_HISTORY
+                            "Очистить историю поиска"
+    IDS_MUI_CLEAR_REPL_HISTORY
+                            "Очистить историю замен"
 END
 
 STRINGTABLE
@@ -311,7 +324,7 @@ STRINGTABLE
 BEGIN
 
 IDS_MUI_ABOUT_RTF_0  "{\
-\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\fswiss\\fcharset204 Arial;}}\
+\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Segoe UI;}{\\f1\\fswiss\\fcharset204 Segoe UI;}}\
 {\\colortbl ;\\red80\\green160\\blue80;}\
 \\tx3500\\tx7000\\fs18\
 \\cf0 \\fs20\\b1\\ul1 \\f1\\'d0\\'e0\\'e7\\'f0\\'e0\\'e1\\'ee\\'f2\\'ea\\'e0\\f0 :\\ul0\\b0\\fs18\\par\
@@ -332,44 +345,8 @@ IDS_MUI_ABOUT_RTF_5  "\
 \\cf0 \\fs20\\b1\\ul1 \\f1\\'cb\\'e8\\'f6\\'e5\\'ed\\'e7\\'e8\\'e8\\f0 :\\ul0\\b0\\fs18\\par\
 "
 
-IDS_MUI_ABOUT_RTF_6  "\
-\\cf0 \\fs20\\b1\\ul1 \\f1\\'cb\\'e8\\'f6\\'e5\\'ed\\'e7\\'e8\\'ff\\f0  Notepad3:\\ul0\\b0\\fs18\\par\
-\\cf0 \\par\
-\\cf0 Notepad3 and MiniPath Copyright \\u0169   2008-2020 Rizonesoft, All rights reserved.\\par\
-\\cf0 https://www.rizonesoft.com\\par\
-\\cf0 \\par\
-\\cf0 Redistribution and use in source and binary forms, with or without modification,\\par\
-\\cf0 are permitted provided that the following conditions are met:\\par\
-\\cf0 \\par\
-\\cf0 1. Redistributions of source code must retain the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer.\\par\
-\\cf0 \\par\
-\\cf0 2. Redistributions in binary form must reproduce the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer in the\\par\
-\\cf0 documentation and/or other materials provided with the distribution.\\par\
-\\cf0 \\par\
-\\cf0 3. Neither the name of Florian Balmer nor the names of its contributors\\par\
-\\cf0 may be used to endorse or promote products derived from this software\\par\
-\\cf0 without specific prior written permission.\\par\
-\\cf0 \\par\
-\\cf0 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\\par\
-\\cf0 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED\\par\
-\\cf0 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\\par\
-\\cf0 PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\\par\
-\\cf0 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\\par\
-\\cf0 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\\par\
-\\cf0 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\\par\
-\\cf0 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\\par\
-\\cf0 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\\par\
-\\cf0 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\\par\
-\\cf0 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\\par\
-}"
-
 END
 
-//
-// Lines added to synchronize the number of lines of all "strings_xx_yy.rc" files.
-//
 #endif    // Russian (Russia) resources
 /////////////////////////////////////////////////////////////////////////////
 

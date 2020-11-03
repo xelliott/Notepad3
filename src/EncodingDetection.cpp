@@ -13,7 +13,6 @@
 *                                                                             *
 *                                                                             *
 *******************************************************************************/
-
 #if !defined(WINVER)
 #define WINVER 0x601  /*_WIN32_WINNT_WIN7*/
 #endif
@@ -27,19 +26,15 @@
 #define WIN32_LEAN_AND_MEAN 1
 #define NOMINMAX 1
 #include <windows.h>
-#include <shlwapi.h>
 
 #define STRSAFE_NO_CB_FUNCTIONS
 #define STRSAFE_NO_DEPRECATE      // don't allow deprecated functions
 #include <strsafe.h>
-#include <math.h>
+#include <string_view>
 
 //~#include <future>                 // async detection
 
-#include "resource.h"
-
 extern "C" {
-#include "TypeDefs.h"
 #include "Helpers.h"
 #include "Encoding.h"
 #include "SciCall.h"
@@ -50,6 +45,12 @@ extern "C" {
 
 // UCHARDET - Universal Character Detection (by Mozilla)
 #include "uchardet/src/uchardet.h"
+
+#include "resource.h"
+
+//=============================================================================
+
+extern "C" void Style_SetMultiEdgeLine(const int colVec[], const size_t count);
 
 //=============================================================================
 
@@ -64,6 +65,7 @@ extern "C" const char* Encoding_GetTitleInfoA() {
   ::WideCharToMultiByte(CP_ACP, 0, wchEncodingInfo, -1, chEncodingInfo, (int)COUNTOF(chEncodingInfo), NULL, NULL);
   return chEncodingInfo;
 }
+
 
 //=============================================================================
 
@@ -895,7 +897,7 @@ static void _SetEncodingTitleInfo(const ENC_DET_T* pEncDetInfo)
     StringCchCat(wchEncodingInfo, COUNTOF(wchEncodingInfo), encodingUCD);
   }
   else {
-    const WCHAR* const ukn = (!encodingUCD || (encodingUCD[0] == L'\0')) ? L"<unknown>" : encodingUCD;
+    const WCHAR* const ukn = (encodingUCD[0] == L'\0') ? L"<unknown>" : encodingUCD;
     StringCchCat(wchEncodingInfo, COUNTOF(wchEncodingInfo), (encUCD == CPI_ASCII_7BIT) ? L"ASCII" : ukn);
   }
   WCHAR tmpBuf[80] = { '\0' };
@@ -975,11 +977,12 @@ static void _SetFileVars(char* buffer, size_t cch, LPFILEVARS lpfv)
         lpfv->bWordWrap = (i) ? false : true;
         lpfv->mask |= FV_WORDWRAP;
       }
+    }
 
-      if (FileVars_ParseInt(buffer, "fill-column", &i)) {
-        lpfv->iLongLinesLimit = clampi(i, 0, LONG_LINES_MARKER_LIMIT);
-        lpfv->mask |= FV_LONGLINESLIMIT;
-      }
+    char columns[SMALL_BUFFER];
+    if (FileVars_ParseStr(buffer, "fill-column", columns, COUNTOF(columns))) {
+      NormalizeColumnVector(columns, lpfv->wchMultiEdgeLines, COUNTOF(lpfv->wchMultiEdgeLines));
+      lpfv->mask |= FV_LONGLINESLIMIT;
     }
   }
 
@@ -988,20 +991,22 @@ static void _SetFileVars(char* buffer, size_t cch, LPFILEVARS lpfv)
 
   if (!bHasSignature && !Settings.NoEncodingTags && !bDisableFileVar) {
 
-    if (FileVars_ParseStr(buffer, "encoding", lpfv->tchEncoding, COUNTOF(lpfv->tchEncoding)))
+    if (FileVars_ParseStr(buffer, "coding", lpfv->chEncoding, COUNTOF(lpfv->chEncoding))) {
       lpfv->mask |= FV_ENCODING;
-    else if (FileVars_ParseStr(buffer, "charset", lpfv->tchEncoding, COUNTOF(lpfv->tchEncoding)))
+    } else if (FileVars_ParseStr(buffer, "encoding", lpfv->chEncoding, COUNTOF(lpfv->chEncoding))) {
       lpfv->mask |= FV_ENCODING;
-    else if (FileVars_ParseStr(buffer, "coding", lpfv->tchEncoding, COUNTOF(lpfv->tchEncoding)))
+    } else if (FileVars_ParseStr(buffer, "charset", lpfv->chEncoding, COUNTOF(lpfv->chEncoding))) {
       lpfv->mask |= FV_ENCODING;
+    }
   }
   if (lpfv->mask & FV_ENCODING) {
-    lpfv->iEncoding = Encoding_MatchA(lpfv->tchEncoding);
+    lpfv->iEncoding = Encoding_MatchA(lpfv->chEncoding);
   }
 
   if (!Flags.NoFileVariables && !bDisableFileVar) {
-    if (FileVars_ParseStr(buffer, "mode", lpfv->tchMode, COUNTOF(lpfv->tchMode)))
+    if (FileVars_ParseStr(buffer, "mode", lpfv->chMode, COUNTOF(lpfv->chMode))) {
       lpfv->mask |= FV_MODE;
+    }
   }
 }
 
@@ -1009,7 +1014,7 @@ static void _SetFileVars(char* buffer, size_t cch, LPFILEVARS lpfv)
 //
 //  FileVars_Init()
 //
-extern "C" bool FileVars_Init(const char* lpData, size_t cbData, LPFILEVARS lpfv)
+extern "C" bool FileVars_GetFromData(const char* lpData, size_t cbData, LPFILEVARS lpfv)
 {
   ZeroMemory(lpfv, sizeof(FILEVARS));
   lpfv->bTabIndents = Settings.TabIndents;
@@ -1017,8 +1022,8 @@ extern "C" bool FileVars_Init(const char* lpData, size_t cbData, LPFILEVARS lpfv
   lpfv->bWordWrap = Settings.WordWrap;
   lpfv->iTabWidth = Settings.TabWidth;
   lpfv->iIndentWidth = Settings.IndentWidth;
-  lpfv->iLongLinesLimit = Settings.LongLinesLimit;
   lpfv->iEncoding = Settings.DefaultEncoding;
+  StringCchCopy(lpfv->wchMultiEdgeLines, COUNTOF(lpfv->wchMultiEdgeLines), Settings.MultiEdgeLines);
 
   if ((Flags.NoFileVariables && Settings.NoEncodingTags) || !lpData || !cbData) { return true; }
 
@@ -1061,9 +1066,9 @@ extern "C" bool FileVars_Apply(LPFILEVARS lpfv) {
   int const  _iWrapMode = _bWordWrap ? ((Settings.WordWrapMode == 0) ? SC_WRAP_WHITESPACE : SC_WRAP_CHAR) : SC_WRAP_NONE;
   SciCall_SetWrapMode(_iWrapMode);
 
-  int const _iLongLinesLimit = (lpfv->mask & FV_LONGLINESLIMIT) ? lpfv->iLongLinesLimit : Settings.LongLinesLimit;
-  SciCall_SetEdgeColumn(_iLongLinesLimit);
-  Globals.iWrapCol = _iLongLinesLimit;
+  int edgeColumns[SMALL_BUFFER];
+  size_t const cnt = ReadVectorFromString(lpfv->wchMultiEdgeLines, edgeColumns, COUNTOF(edgeColumns), 0, LONG_LINES_MARKER_LIMIT, 0, true);
+  Style_SetMultiEdgeLine(edgeColumns, cnt);
 
   return true;
 }
@@ -1129,7 +1134,7 @@ extern "C" bool FileVars_ParseInt(char* pszData, char* pszName, int* piValue) {
 //
 extern "C" bool FileVars_ParseStr(char* pszData, char* pszName, char* pszValue, int cchValue) {
 
-  char* pvStart = StrStrIA(pszData, pszName);
+  const char* pvStart = StrStrIA(pszData, pszName);
   while (pvStart) {
     char chPrev = (pvStart > pszData) ? *(pvStart - 1) : 0;
     if (!IsCharAlphaNumericA(chPrev) && chPrev != '-' && chPrev != '_') {
@@ -1147,8 +1152,8 @@ extern "C" bool FileVars_ParseStr(char* pszData, char* pszName, char* pszValue, 
     pvStart = StrStrIA(pvStart, pszName);  // next
   }
 
-  if (pvStart) {
-
+  if (pvStart)
+  {
     bool bQuoted = false;
     while (*pvStart && StrChrIA(":=\"' \t", *pvStart)) {
       if (*pvStart == '\'' || *pvStart == '"')
@@ -1181,8 +1186,8 @@ extern "C" bool FileVars_ParseStr(char* pszData, char* pszName, char* pszValue, 
 //
 extern "C" bool FileVars_IsUTF8(LPFILEVARS lpfv) {
   if (lpfv->mask & FV_ENCODING) {
-    if (StringCchCompareNIA(lpfv->tchEncoding, COUNTOF(lpfv->tchEncoding), "utf-8", CSTRLEN("utf-8")) == 0 ||
-      StringCchCompareNIA(lpfv->tchEncoding, COUNTOF(lpfv->tchEncoding), "utf8", CSTRLEN("utf8")) == 0)
+    if (StringCchCompareNIA(lpfv->chEncoding, COUNTOF(lpfv->chEncoding), "utf-8", CSTRLEN("utf-8")) == 0 ||
+      StringCchCompareNIA(lpfv->chEncoding, COUNTOF(lpfv->chEncoding), "utf8", CSTRLEN("utf8")) == 0)
       return true;
   }
   return false;
@@ -1231,7 +1236,7 @@ extern "C" ENC_DET_T Encoding_DetectEncoding(LPWSTR pszFile, const char* lpData,
 {
   ENC_DET_T encDetRes = INIT_ENC_DET_T;
 
-  FileVars_Init(lpData, cbData, &Globals.fvCurFile);
+  FileVars_GetFromData(lpData, cbData, &Globals.fvCurFile);
 
   bool const bBOM_LE = Has_UTF16_LE_BOM(lpData, cbData);
   bool const bBOM_BE = Has_UTF16_BE_BOM(lpData, cbData);

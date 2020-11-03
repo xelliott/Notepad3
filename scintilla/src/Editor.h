@@ -67,6 +67,7 @@ class SelectionText {
 public:
 	bool rectangular;
 	bool lineCopy;
+	// >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
 	bool asBinary;
 	int codePage;
 	int characterSet;
@@ -76,6 +77,7 @@ public:
 		rectangular = false;
 		lineCopy = false;
 		asBinary = false;
+	// <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
 		codePage = 0;
 		characterSet = 0;
 	}
@@ -212,7 +214,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	int dwellDelay;
 	int ticksToDwell;
 	bool dwelling;
-	enum { selChar, selWord, selSubLine, selWholeLine } selectionType;
+	enum class TextUnit { character, word, subLine, wholeLine } selectionUnit;
 	Point ptMouseLast;
 	enum { ddNone, ddInitial, ddDragging } inDragDrop;
 	bool dropWentOutside;
@@ -248,7 +250,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 
 	CaretPolicies caretPolicies;
 
-	CaretPolicy   visiblePolicy;
+	CaretPolicy visiblePolicy;
 
 	Sci::Position searchAnchor;
 
@@ -328,7 +330,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void SetSelection(int currentPos_);
 	void SetEmptySelection(SelectionPosition currentPos_);
 	void SetEmptySelection(Sci::Position currentPos_);
-	enum AddNumber { addOne, addEach };
+	enum class AddNumber { one, each };
 	void MultipleSelectAdd(AddNumber addNumber);
 	bool RangeContainsProtected(Sci::Position start, Sci::Position end) const noexcept;
 	bool SelectionContainsProtected() const;
@@ -390,7 +392,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void RefreshPixMaps(Surface *surfaceWindow);
 	void Paint(Surface *surfaceWindow, PRectangle rcArea);
 	Sci::Position FormatRange(bool draw, const Sci_RangeToFormat *pfr);
-	int TextWidth(int style, const char *text);
+	long TextWidth(uptr_t style, const char *text);
 
 	virtual void SetVerticalScrollPos() = 0;
 	virtual void SetHorizontalScrollPos() = 0;
@@ -413,10 +415,12 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void ClearDocumentStyle();
 	virtual void Cut();
 	void PasteRectangular(SelectionPosition pos, const char *ptr, Sci::Position len);
+// >>>>>>>>>>>>>>>   BEG NON STD SCI PATCH   >>>>>>>>>>>>>>>
 	virtual void Copy(bool asBinary) = 0;
 	virtual void CopyAllowLine();
 	virtual bool CanPaste();
 	virtual void Paste(bool asBinary) = 0;
+// <<<<<<<<<<<<<<<   END NON STD SCI PATCH   <<<<<<<<<<<<<<<
 	void Clear();
 	virtual void SelectAll();
 	virtual void Undo();
@@ -428,7 +432,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	virtual void NotifyChange() = 0;
 	virtual void NotifyFocus(bool focus);
 	virtual void SetCtrlID(int identifier);
-	virtual int GetCtrlID() { return ctrlID; }
+	virtual int GetCtrlID() const noexcept { return ctrlID; }
 	virtual void NotifyParent(SCNotification scn) = 0;
 	virtual void NotifyStyleToNeeded(Sci::Position endStyleNeeded);
 	void NotifyChar(int ch, CharacterSource charSource);
@@ -539,8 +543,8 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	virtual void IdleWork();
 	virtual void QueueIdleWork(WorkNeeded::workItems items, Sci::Position upTo=0);
 
-	virtual bool PaintContains(PRectangle rc);
-	bool PaintContainsMargin();
+	virtual bool PaintContains(PRectangle rc) const noexcept;
+	virtual bool PaintContainsMargin() const noexcept;
 	void CheckForChangeOutsidePaint(Range r);
 	void SetBraceHighlight(Sci::Position pos0, Sci::Position pos1, int matchStyle);
 
@@ -548,6 +552,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	virtual void SetDocPointer(Document *document);
 
 	void SetAnnotationVisible(int visible);
+	void SetEOLAnnotationVisible(int visible);
 
 	Sci::Line ExpandLine(Sci::Line line);
 	void SetFoldExpanded(Sci::Line lineDoc, bool expanded);
@@ -651,10 +656,10 @@ public:
 			surf->SetBidiR2L(ed->BidirectionalR2L());
 		}
 	}
-	AutoSurface(SurfaceID sid, Editor *ed, int technology = -1) {
+	AutoSurface(SurfaceID sid, Editor *ed, int technology = -1, bool printing = false) {
 		if (ed->wMain.GetID()) {
 			surf.reset(Surface::Allocate(technology != -1 ? technology : ed->technology));
-			surf->Init(sid, ed->wMain.GetID());
+			surf->Init(sid, ed->wMain.GetID(), printing);
 			surf->SetUnicodeMode(SC_CP_UTF8 == ed->CodePage());
 			surf->SetDBCSMode(ed->CodePage());
 			surf->SetBidiR2L(ed->BidirectionalR2L());

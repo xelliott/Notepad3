@@ -59,7 +59,6 @@ BEGIN
     BEGIN
         MENUITEM "&Neu\tCtrl+N",                                      IDM_FILE_NEW
         MENUITEM "&Öffnen...\tCtrl+O",                                IDM_FILE_OPEN
-        MENUITEM "&Erneut laden\tF5",                                 IDM_FILE_REVERT
         MENUITEM "&Speichern\tCtrl+S",                                IDM_FILE_SAVE
         MENUITEM "Speichern &unter...\tF6",                           IDM_FILE_SAVEAS
         MENUITEM "&Kopie speichern...\tCtrl+F6",                      IDM_FILE_SAVECOPY
@@ -77,7 +76,7 @@ BEGIN
         END
         POPUP "&Starte"
         BEGIN
-            MENUITEM "Öffne Datei-&Explorer",               IDM_FILE_EXPLORE_DIR
+            MENUITEM "Suche in &Dateien\tCtrl+Shift+F",       IDM_GREP_WIN_SEARCH
             MENUITEM SEPARATOR
             MENUITEM "&Neues Fenster\tAlt+N",               IDM_FILE_NEWWINDOW
             MENUITEM "&Leeres Fenster\tAlt+Shift+N",        IDM_FILE_NEWWINDOW2
@@ -90,28 +89,38 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Web Aufruf &1\tCtrl+Shift+1",         CMD_WEBACTION1
             MENUITEM "Web Aufruf &2\tCtrl+Shift+2",         CMD_WEBACTION2
+            MENUITEM SEPARATOR
+            MENUITEM "Öffne Datei-&Explorer",               IDM_FILE_EXPLORE_DIR
         END
         MENUITEM SEPARATOR
+        MENUITEM "&Datei erneut laden\tF5",                    IDM_FILE_REVERT
         POPUP "&Codierung"
         BEGIN
-            MENUITEM "&ANSI",                               IDM_ENCODING_ANSI
-            MENUITEM "&Unicode",                            IDM_ENCODING_UNICODE
-            MENUITEM "Unicode &Big Endian",                 IDM_ENCODING_UNICODEREV
-            MENUITEM "UTF-&8\tShift+F8",                    IDM_ENCODING_UTF8
-            MENUITEM "UTF-8 mit &Signatur",                 IDM_ENCODING_UTF8SIGN
-            MENUITEM "&Mehr Codierungen...\tF9",            IDM_ENCODING_SELECT
+            POPUP "&Datei erneut laden als"
+            BEGIN
+                MENUITEM "&Default (Voreinstellung)",           CMD_RECODEDEFAULT
+                MENUITEM "&ANSI\tCtrl+Shift+A",                 CMD_RECODEANSI
+                MENUITEM "&OEM\tCtrl+Shift+O",                  CMD_RECODEOEM
+                MENUITEM "&GB18030\tCtrl+Shift+F10",            CMD_RECODEGB18030
+                MENUITEM SEPARATOR
+                MENUITEM "ASCII als UTF-&8\tCtrl+Shift+F8",     CMD_RELOADASCIIASUTF8
+                MENUITEM "Erzwinge UCHARDET Analyse",           CMD_RELOADFORCEDETECTION
+                MENUITEM "Ignoriere Codierungs &Tags\tAlt+F8",  CMD_RELOADNOFILEVARS
+                MENUITEM SEPARATOR
+                MENUITEM "Mehr &Codierungen...\tF8",            IDM_ENCODING_RECODE
+            END
+            POPUP "&Setze Dokument als"
+            BEGIN
+                MENUITEM "&ANSI",                           IDM_ENCODING_ANSI
+                MENUITEM "&Unicode",                        IDM_ENCODING_UNICODE
+                MENUITEM "Unicode &Big Endian",             IDM_ENCODING_UNICODEREV
+                MENUITEM "UTF-&8\tShift+F8",                IDM_ENCODING_UTF8
+                MENUITEM "UTF-8 mit &Signatur",             IDM_ENCODING_UTF8SIGN
+                MENUITEM SEPARATOR
+                MENUITEM "Mehr &Codierungen...\tF9",        IDM_ENCODING_SELECT
+            END
             MENUITEM SEPARATOR
-            MENUITEM "Recodiere als &Default\tCtrl+Alt+F",      CMD_RECODEDEFAULT
-            MENUITEM "Recodiere als &ANSI\tCtrl+Shift+A",       CMD_RECODEANSI
-            MENUITEM "Recodiere als &OEM\tCtrl+Shift+O",        CMD_RECODEOEM
-            MENUITEM "Recodiere als &GB18030\tCtrl+Shift+F10",  CMD_RECODEGB18030
-            MENUITEM "Recodiere wie UCHARDET Analyse",          CMD_RELOADFORCEDETECTION
-            MENUITEM SEPARATOR
-            MENUITEM "ASCII als UTF-&8\tCtrl+Shift+F8",     CMD_RELOADASCIIASUTF8
-            MENUITEM "Ignoriere Codierungs &Tags\tAlt+F8",  CMD_RELOADNOFILEVARS
-            MENUITEM "&Re-Codierung...\tF8",                IDM_ENCODING_RECODE
-            MENUITEM SEPARATOR
-            MENUITEM "&Voreinstellung...",                  IDM_ENCODING_SETDEFAULT
+            MENUITEM "Codierungs &Voreinstellung...",       IDM_ENCODING_SETDEFAULT
         END
         POPUP "Zeilenumbruch"
         BEGIN
@@ -258,7 +267,8 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Zeit/Datum (Kurzform)\tCtrl+F5",                    IDM_EDIT_INSERT_SHORTDATE
             MENUITEM "Zeit/Datum (&Langform)\tCtrl+Shift+F5",              IDM_EDIT_INSERT_LONGDATE
-            MENUITEM "&Aktualisiere Zeitstempel\tShift+F5",                CMD_TIMESTAMPS
+            MENUITEM "&Aktueller Zeitstempel",                             CMD_INSERT_TIMESTAMP
+            MENUITEM "&Aktualisiere Zeitstempel\tShift+F5",                CMD_UPDATE_TIMESTAMPS
             MENUITEM SEPARATOR
             MENUITEM "&Einzeilenkommentar (Toggle)\tCtrl+Q",               IDM_EDIT_LINECOMMENT
             MENUITEM "&Mehrzeilenkommentar\tCtrl+Shift+Q",                 IDM_EDIT_STREAMCOMMENT
@@ -306,6 +316,8 @@ BEGIN
             MENUITEM "&Ersetze...\tCtrl+H",                     IDM_EDIT_REPLACE
             MENUITEM "Ersetze Nächstes\tF4",                    IDM_EDIT_REPLACENEXT
             MENUITEM "&Gehe zu...\tCtrl+G",                     IDM_EDIT_GOTOLINE
+            MENUITEM SEPARATOR
+            MENUITEM "Suche in &Dateien\tCtrl+Shift+F",           IDM_GREP_WIN_SEARCH
         END
     END
     POPUP "&Ansicht"
@@ -319,7 +331,14 @@ BEGIN
         MENUITEM "Zeige Zeilenumbrüche\tCtrl+Shift+9",      IDM_VIEW_SHOWEOLS
         MENUITEM SEPARATOR
         MENUITEM "H&yperlink Indikator\tCtrl+Alt+W",        IDM_VIEW_HYPERLINKHOTSPOTS
-        MENUITEM "&Farb-Definition Indikator",              IDM_VIEW_COLORDEFHOTSPOTS
+        POPUP "&Farb-Definition Indikator"
+        BEGIN
+            MENUITEM "&AUS",                                IDM_VIEW_COLORDEFHOTSPOTS
+            MENUITEM "&RGB+A"                               IDM_VIEW_COLOR_RGBA
+            MENUITEM "&A+RGB"                               IDM_VIEW_COLOR_ARGB
+            MENUITEM "&BGRA"                                IDM_VIEW_COLOR_BGRA
+        END
+        MENUITEM "&Unicode-Point Indikator",                IDM_VIEW_UNICODE_POINTS
         MENUITEM "&Zeige passende Klammer\tCtrl+Shift+V",   IDM_VIEW_MATCHBRACES
         POPUP "A&ktuelle Zeile hervorheben\tCtrl+Shift+I"
         BEGIN
@@ -330,25 +349,26 @@ BEGIN
         POPUP "Markiere Fundstellen"
         BEGIN
             MENUITEM "&Aktivieren\tAlt+A",                  IDM_VIEW_MARKOCCUR_ONOFF
+            MENUITEM "Zusätzliche Lesezeichen",             IDM_VIEW_MARKOCCUR_BOOKMARKS
             MENUITEM SEPARATOR
             MENUITEM "Nur sichtbare hervorheben",           IDM_VIEW_MARKOCCUR_VISIBLE
             MENUITEM SEPARATOR
             MENUITEM "Berücksichtige Groß-/Kleinschreibung", IDM_VIEW_MARKOCCUR_CASE
             POPUP "Nur ganze Wörter"
             BEGIN
-                MENUITEM "AUS",                             IDM_VIEW_MARKOCCUR_WNONE
+                MENUITEM "&AUS",                            IDM_VIEW_MARKOCCUR_WNONE
                 MENUITEM "Selektiertes Wort",               IDM_VIEW_MARKOCCUR_WORD
                 MENUITEM "Aktuelles Wort",                  IDM_VIEW_MARKOCCUR_CURRENT
             END
         END
         MENUITEM SEPARATOR
         MENUITEM "Zeilen &Nummern\tCtrl+Shift+N",           IDM_VIEW_LINENUMBERS
-        MENUITEM "&Selektionsrand\tCtrl+Shift+M",           IDM_VIEW_MARGIN
+        MENUITEM "&Lesezeichen Rand\tCtrl+Shift+M",         IDM_VIEW_BOOKMARK_MARGIN
         MENUITEM SEPARATOR
         POPUP "Code &Faltung"
         BEGIN
             MENUITEM "&Aktiviere Faltung",                      IDM_VIEW_FOLDING
-            MENUITEM "Alle Falten &Umschalten\tCtrl+Shift+F",   IDM_VIEW_TOGGLEFOLDS
+            MENUITEM "Alle Falten &Umschalten\tCtrl+Alt+F",     IDM_VIEW_TOGGLEFOLDS
             MENUITEM SEPARATOR
             MENUITEM "Gehe zur &Nächsten\tAlt+ +",              CMD_FOLDJUMPDOWN
             MENUITEM "Gehe zur &Vorherigen\tAlt+ –",            CMD_FOLDJUMPUP
@@ -359,10 +379,20 @@ BEGIN
         POPUP "&Anzeigen"
         BEGIN
             MENUITEM "Fokussierte Ansicht\tCtrl+Alt+V",         IDM_VIEW_TOGGLE_VIEW
+            POPUP "Ansicht Modus"
+            BEGIN
+                MENUITEM "Faltung",                             IDM_VIEW_FV_FOLD
+                MENUITEM "Lesezeichen",                         IDM_VIEW_FV_BOOKMARK
+                MENUITEM "Hervorheben",                         IDM_VIEW_FV_HIGHLIGHT
+                MENUITEM "Lesezeichen && Faltung",              IDM_VIEW_FV_BKMRKFOLD
+                MENUITEM "Hervorheben && Faltung",              IDM_VIEW_FV_HIGHLGFOLD
+            END
+            MENUITEM SEPARATOR
             MENUITEM "Logfile &Monitoring",                     IDM_VIEW_CHASING_DOCTAIL
             MENUITEM "&Erweiterte Dokument Ende Ansicht",       IDM_VIEW_SCROLLPASTEOF
             MENUITEM "Zeige einen &Hyperlink Tooltip",          IDM_VIEW_SHOW_HYPLNK_CALLTIP
             END
+        MENUITEM SEPARATOR
         POPUP "&Leisten"
         BEGIN
             MENUITEM "Zeige &Menüleiste",                       IDM_VIEW_MENUBAR
@@ -424,6 +454,7 @@ BEGIN
             MENUITEM "&Verlasse Notepad3",                      IDM_VIEW_ESCEXIT
         END
         MENUITEM "Speichern vor Werkzeug Start",                IDM_VIEW_SAVEBEFORERUNNINGTOOLS
+        MENUITEM "Berechne Tiny-Expressions",                   IDM_VIEW_EVALTINYEXPRONSEL
         MENUITEM SEPARATOR
         POPUP "&Erinnern an"
         BEGIN
@@ -445,14 +476,19 @@ BEGIN
             MENUITEM "In den &Tray minimieren",                 IDM_VIEW_MINTOTRAY
             MENUITEM "&Transparent Modus\tAlt+G",               IDM_VIEW_TRANSPARENT
         END
-        POPUP "&Technologie"
+        POPUP "Tech&nologie"
         BEGIN
             POPUP "&Rendering"
             BEGIN
-                MENUITEM "Standard &GDI (keine Ligaturen)",     IDM_SET_RENDER_TECH_DEFAULT
                 MENUITEM "&DirectWrite (Direct2D)",             IDM_SET_RENDER_TECH_D2D
                 MENUITEM "DirectWrite &Retain",                 IDM_SET_RENDER_TECH_D2DRETAIN
                 MENUITEM "Direct&Write GDI DC",                 IDM_SET_RENDER_TECH_D2DDC
+                MENUITEM "&GDI (keine Ligaturen)",              IDM_SET_RENDER_TECH_GDI
+            END
+            POPUP "R&TL Layout (GDI)"
+            BEGIN
+                MENUITEM "&Editor Bereich",                     IDM_SET_RTL_LAYOUT_EDIT
+                MENUITEM "&Andere Dialoge",                     IDM_SET_RTL_LAYOUT_DLG
             END
             POPUP "&Bidirektional"
             BEGIN
@@ -484,32 +520,45 @@ IDR_MUI_POPUPMENU MENU
 BEGIN
     POPUP "+"
     BEGIN
-        MENUITEM "&Rückgängig",                 IDM_EDIT_UNDO
-        MENUITEM "&Wiederholen",                IDM_EDIT_REDO
+        MENUITEM "Öffne Hyperlink",            CMD_OPEN_HYPERLINK
         MENUITEM SEPARATOR
-        MENUITEM "&Ausschneiden",               IDM_EDIT_CUT
-        MENUITEM "&Kopieren",                   IDM_EDIT_COPY
-        MENUITEM "&Einfügen",                   IDM_EDIT_PASTE
-        MENUITEM "&Löschen",                    IDM_EDIT_CLEAR
+        MENUITEM "Rückgängig",                 IDM_EDIT_UNDO
+        MENUITEM "Wiederholen",                IDM_EDIT_REDO
         MENUITEM SEPARATOR
-        MENUITEM "Alle Ausw&ählen",             IDM_EDIT_SELECTALL
+        MENUITEM "Ausschneiden",               IDM_EDIT_CUT
+        MENUITEM "Kopieren",                   IDM_EDIT_COPY
+        MENUITEM "Einfügen",                   IDM_EDIT_PASTE
+        MENUITEM "Löschen",                    IDM_EDIT_CLEAR
         MENUITEM SEPARATOR
-        MENUITEM "&Aktuelle Falte umschalten",  IDM_VIEW_TOGGLE_CURRENT_FOLD
+        MENUITEM "Alle Auswählen",             IDM_EDIT_SELECTALL
         MENUITEM SEPARATOR
-        MENUITEM "Öffne Web-Aktion &1",         CMD_WEBACTION1
-        MENUITEM "Öffne Web Aktion &2",         CMD_WEBACTION2
-        MENUITEM "Öffne &Hyperlink",            CMD_OPEN_HYPERLINK
+        MENUITEM "Aktuelle Falte umschalten",  IDM_VIEW_TOGGLE_CURRENT_FOLD
+        MENUITEM SEPARATOR
+        MENUITEM "Öffne Web-Aktion 1",         CMD_WEBACTION1
+        MENUITEM "Öffne Web Aktion 2",         CMD_WEBACTION2
+        MENUITEM "Öffne Datei-Explorer",       IDM_FILE_EXPLORE_DIR
     END
     POPUP "+"
     BEGIN
-            MENUITEM "Zeige &Menüleiste",                       IDM_VIEW_MENUBAR
-            MENUITEM "Zeige &Werkzeugleiste",                   IDM_VIEW_TOOLBAR
-            MENUITEM "Zeige &Statusleiste",                     IDM_VIEW_STATUSBAR
+            MENUITEM "Zeige Menüleiste",                       IDM_VIEW_MENUBAR
+            MENUITEM "Zeige Werkzeugleiste",                   IDM_VIEW_TOOLBAR
+            MENUITEM "Zeige Statusleiste",                     IDM_VIEW_STATUSBAR
             MENUITEM SEPARATOR
-            MENUITEM "&Lade andere Werkzeugleiste...",          IDM_VIEW_LOADTHEMETB
-            MENUITEM "Werkzeugleiste &anpassen...",             IDM_VIEW_CUSTOMIZETB
-            MENUITEM "Werkzeugleisten &Umschalten",             IDM_VIEW_TOGGLETB
-            MENUITEM "&DPI Skalierung der Werkzeugleiste",      IDM_VIEW_DPISCALETB
+            MENUITEM "Lade andere Werkzeugleiste...",          IDM_VIEW_LOADTHEMETB
+            MENUITEM "Werkzeugleiste anpassen...",             IDM_VIEW_CUSTOMIZETB
+            MENUITEM "Werkzeugleisten Umschalten",             IDM_VIEW_TOGGLETB
+            MENUITEM "DPI Skalierung der Werkzeugleiste",      IDM_VIEW_DPISCALETB
+    END
+    POPUP "+"
+    BEGIN
+        MENUITEM "Lesezeichen entfernen",                      IDM_EDIT_CLEAR_MARKER
+        MENUITEM "So markierte Zeilen Ausschneiden",           IDM_EDIT_CUT_MARKED
+        MENUITEM "So markierte Zeilen Kopieren",               IDM_EDIT_COPY_MARKED
+        MENUITEM "So markierte Zeilen Löschen",                IDM_EDIT_DELETE_MARKED
+        MENUITEM SEPARATOR
+        MENUITEM "Code Faltung",                               IDM_VIEW_FOLDING
+        MENUITEM "Zeilen Nummern",                             IDM_VIEW_LINENUMBERS
+        MENUITEM "Lesezeichen Rand",                           IDM_VIEW_BOOKMARK_MARGIN
     END
     POPUP "+"
     BEGIN

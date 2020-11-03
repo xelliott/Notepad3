@@ -122,6 +122,11 @@ __forceinline LRESULT SciCall_##fn(type1 var1, type2 var2) {       \
 
 //=============================================================================
 
+// Initialize
+DeclareSciCallR0(GetLayoutCache, GETLAYOUTCACHE, int)
+DeclareSciCallV1(SetLayoutCache, SETLAYOUTCACHE, int, cache)
+DeclareSciCallR0(GetPositionCache, GETPOSITIONCACHE, int)
+DeclareSciCallV1(SetPositionCache, SETPOSITIONCACHE, int, cache)
 
 // Document Pointer Handling
 DeclareSciCallR0(GetDocPointer, GETDOCPOINTER, sptr_t)
@@ -155,6 +160,7 @@ DeclareSciCallR1(GetLineSelEndPosition, GETLINESELENDPOSITION, DocPos, DocLn, li
 
 DeclareSciCallR2(PositionFromPoint, POSITIONFROMPOINT, DocPos, int, pt_x, int, pt_y)
 DeclareSciCallR2(CharPositionFromPoint, CHARPOSITIONFROMPOINT, DocPos, int, pt_x, int, pt_y)
+DeclareSciCallR2(CharPositionFromPointClose, CHARPOSITIONFROMPOINTCLOSE, DocPos, int, pt_x, int, pt_y)
 DeclareSciCallR01(PointXFromPosition, POINTXFROMPOSITION, int, DocPos, position)
 DeclareSciCallR01(PointYFromPosition, POINTYFROMPOSITION, int, DocPos, position)
 
@@ -209,11 +215,15 @@ DeclareSciCallV0(NewLine, NEWLINE)
 DeclareSciCallV0(Tab, TAB)
 DeclareSciCallV0(BackTab, BACKTAB)
 DeclareSciCallV0(VCHome, VCHOME)
+DeclareSciCallV0(LineUp, LINEUP)
+DeclareSciCallV0(LineDown, LINEDOWN)
 DeclareSciCallV0(LineUpExtend, LINEUPEXTEND)
 DeclareSciCallV0(LineScrollUp, LINESCROLLUP)
 DeclareSciCallV0(LineDownExtend, LINEDOWNEXTEND)
 DeclareSciCallV0(LineScrollDown, LINESCROLLDOWN)
+DeclareSciCallV0(CharLeft, CHARLEFT)
 DeclareSciCallV0(CharLeftExtend, CHARLEFTEXTEND)
+DeclareSciCallV0(CharRight, CHARRIGHT)
 DeclareSciCallV0(CharRightExtend, CHARRIGHTEXTEND)
 DeclareSciCallV0(WordLeft, WORDLEFT)
 DeclareSciCallV0(WordRight, WORDRIGHT)
@@ -223,6 +233,7 @@ DeclareSciCallV0(DelWordRight, DELWORDRIGHT)
 DeclareSciCallV0(DelLineLeft, DELLINELEFT)
 DeclareSciCallV0(DelLineRight, DELLINERIGHT)
 DeclareSciCallV0(LineDelete, LINEDELETE)
+DeclareSciCallV0(LineCut, LINECUT)
 DeclareSciCallV1(LinesSplit, LINESSPLIT, int, pix)
 DeclareSciCallV0(LinesJoin, LINESJOIN)
 DeclareSciCallV0(EditToggleOverType, EDITTOGGLEOVERTYPE)
@@ -238,7 +249,6 @@ DeclareSciCallR2(FindText, FINDTEXT, DocPos, int, flags, struct Sci_TextToFind*,
 
 // Operations
 DeclareSciCallV0(Cut, CUT)
-DeclareSciCallV0(LineCut, LINECUT)
 DeclareSciCallV0(Copy, COPY)
 DeclareSciCallV0(Paste, PASTE)
 DeclareSciCallV0(Clear, CLEAR)
@@ -317,7 +327,7 @@ DeclareSciCallR2(GetLine, GETLINE, DocPos, DocLn, line, const char*, text)
 DeclareSciCallR2(GetCurLine, GETCURLINE, DocPos, unsigned int, length, const char*, text)
 
 inline DocPos SciCall_GetLine_Safe(DocLn iLine, char* pTxtBuf) {
-  DocPos const iLen = SciCall_GetLine(iLine, pTxtBuf);  if (pTxtBuf) pTxtBuf[iLen] = '\0';  return iLen;
+  DocPos const iLen = SciCall_GetLine(iLine, pTxtBuf);  if (pTxtBuf) pTxtBuf[iLen] = '\0';  return (iLen + 1);
 }
 
 
@@ -329,6 +339,7 @@ inline DocPos SciCall_GetLine_Safe(DocLn iLine, char* pTxtBuf) {
 DeclareSciCallV1(CallTipSetFore, CALLTIPSETFORE, COLORREF, colour)
 DeclareSciCallV1(CallTipSetBack, CALLTIPSETBACK, COLORREF, colour)
 DeclareSciCallV1(CallTipSetPosition, CALLTIPSETPOSITION, bool, above)
+DeclareSciCallR0(CallTipPosStart, CALLTIPPOSSTART, DocPos)
 DeclareSciCallV2(CallTipShow, CALLTIPSHOW, DocPos, position, const char*, text)
 DeclareSciCallV2(CallTipSetHlt, CALLTIPSETHLT, int, beg, int, end)
 DeclareSciCallR0(CallTipActive, CALLTIPACTIVE, bool)
@@ -382,12 +393,21 @@ DeclareSciCallV2(StyleSetVisible, STYLESETVISIBLE, int, style, bool, visible)
 DeclareSciCallR1(StyleGetFore, STYLEGETFORE, COLORREF, char, style)
 DeclareSciCallR1(StyleGetBack, STYLEGETBACK, COLORREF, char, style)
 DeclareSciCallR1(GetStyleAt, GETSTYLEAT, char, DocPos, position)
-DeclareSciCallV2(SetStyling, SETSTYLING, DocPosCR, length, int, style)
+DeclareSciCallV2(SetStyling, SETSTYLING, DocPos, length, int, style)
 DeclareSciCallV1(StartStyling, STARTSTYLING, DocPos, position)
 DeclareSciCallR0(GetEndStyled, GETENDSTYLED, DocPos)
-DeclareSciCallR1(StyleGetHotspot, STYLEGETHOTSPOT, bool, int, iStyle)
 
-//=============================================================================
+DeclareSciCallR1(StyleGetHotspot, STYLEGETHOTSPOT, bool, int, iStyle)
+DeclareSciCallV2(StyleSetHotspot, STYLESETHOTSPOT, int, iStyle, bool, hotspot)
+DeclareSciCallV2(SetHotspotActiveFore, SETHOTSPOTACTIVEFORE, bool, useSetting, int, colour)
+DeclareSciCallV2(SetHotspotActiveBack, SETHOTSPOTACTIVEBACK, bool, useSetting, int, colour)
+DeclareSciCallV1(SetHotspotActiveUnderline, SETHOTSPOTACTIVEUNDERLINE, bool, underline)
+DeclareSciCallV1(SetHotspotSigleLine, SETHOTSPOTSINGLELINE, bool, singleline)
+
+DeclareSciCallV1(SetViewWS, SETVIEWWS, int, wspc)
+DeclareSciCallV1(SetViewEOL, SETVIEWEOL, bool, eols)
+
+  //=============================================================================
 //
 // Indentation Guides and Wraping
 //
@@ -423,7 +443,8 @@ DeclareSciCallR1(GetLineIndentPosition, GETLINEINDENTPOSITION, DocPos, DocLn, li
 DeclareSciCallV1(SetIndentationGuides, SETINDENTATIONGUIDES, int, iview)
 DeclareSciCallV1(SetHighLightGuide, SETHIGHLIGHTGUIDE, int, column)
 
-DeclareSciCallR1(BraceMatch, BRACEMATCH, DocPos, DocPos, position)
+DeclareSciCallR1(BraceMatch, BRACEMATCH, DocPos, DocPos, pos)
+DeclareSciCallR2(BraceMatchNext, BRACEMATCHNEXT, DocPos, DocPos, pos, DocPos, posStart)
 DeclareSciCallV2(BraceHighLight, BRACEHIGHLIGHT, DocPos, pos1, DocPos, pos2)
 DeclareSciCallV1(BraceBadLight, BRACEBADLIGHT, DocPos, pos)
 DeclareSciCallV2(BraceHighLightIndicator, BRACEHIGHLIGHTINDICATOR, bool, use, int, indic)
@@ -434,16 +455,19 @@ DeclareSciCallV2(BraceBadLightIndicator, BRACEBADLIGHTINDICATOR, bool, use, int,
 //
 //  Margins
 //
-DeclareSciCallV2(SetMarginTypeN, SETMARGINTYPEN, int, margin, int, type)
-DeclareSciCallR1(GetMarginWidthN, GETMARGINWIDTHN, int, int, margin)
-DeclareSciCallV2(SetMarginWidthN, SETMARGINWIDTHN, int, margin, int, pixelWidth)
-DeclareSciCallV2(SetMarginMaskN, SETMARGINMASKN, int, margin, int, mask)
-DeclareSciCallV2(SetMarginSensitiveN, SETMARGINSENSITIVEN, int, margin, bool, sensitive)
-DeclareSciCallV2(SetMarginBackN, SETMARGINBACKN, int, margin, COLORREF, colour)
-DeclareSciCallV2(SetMarginCursorN, SETMARGINCURSORN, int, margin, int, cursor)
+DeclareSciCallV2(SetMarginTypeN, SETMARGINTYPEN, uintptr_t, margin, int, type)
+DeclareSciCallR1(GetMarginWidthN, GETMARGINWIDTHN, int, uintptr_t, margin)
+DeclareSciCallV2(SetMarginWidthN, SETMARGINWIDTHN, uintptr_t, margin, int, pixelWidth)
+DeclareSciCallV2(SetMarginMaskN, SETMARGINMASKN, uintptr_t, margin, int, mask)
+DeclareSciCallV2(SetMarginSensitiveN, SETMARGINSENSITIVEN, uintptr_t, margin, bool, sensitive)
+DeclareSciCallV2(SetMarginBackN, SETMARGINBACKN, uintptr_t, margin, COLORREF, colour)
+DeclareSciCallV2(SetMarginCursorN, SETMARGINCURSORN, uintptr_t, margin, int, cursor)
 DeclareSciCallV2(SetFoldMarginColour, SETFOLDMARGINCOLOUR, bool, useSetting, COLORREF, colour)
 DeclareSciCallV2(SetFoldMarginHiColour, SETFOLDMARGINHICOLOUR, bool, useSetting, COLORREF, colour)
 DeclareSciCallV1(MarkerEnableHighlight, MARKERENABLEHIGHLIGHT, bool, flag)
+DeclareSciCallR2(MarkerNumberFromLine, MARKERNUMBERFROMLINE, int, DocLn, line, int, which)
+DeclareSciCallR2(MarkerHandleFromLine, MARKERHANDLEFROMLINE, int, DocLn, line, int, which)
+
 DeclareSciCallR2(TextWidth, TEXTWIDTH, int, int, styleNumber, const char*, text)
 
 //=============================================================================
@@ -456,11 +480,14 @@ DeclareSciCallV2(MarkerSetFore, MARKERSETFORE, int, markerNumber, COLORREF, colo
 DeclareSciCallV2(MarkerSetBack, MARKERSETBACK, int, markerNumber, COLORREF, colour)
 DeclareSciCallV2(MarkerSetAlpha, MARKERSETALPHA, int, markerNumber, int, alpha)
 DeclareSciCallR2(MarkerAdd, MARKERADD, int, DocLn, line, int, markerNumber)
+DeclareSciCallV2(MarkerAddSet, MARKERADDSET, DocLn, line, int, markerMask)
 DeclareSciCallV2(MarkerDelete, MARKERDELETE, DocLn, line, int, markerNumber)
 DeclareSciCallV1(MarkerDeleteAll, MARKERDELETEALL, int, markerNumber)
 DeclareSciCallV2(MarkerSetBackSelected, MARKERSETBACKSELECTED, int, markerNumber, int, colour)
+DeclareSciCallR2(MarkerNext, MARKERNEXT, DocLn, DocLn, start, int, markerMask)
+DeclareSciCallR2(MarkerPrevious, MARKERPREVIOUS, DocLn, DocLn, start, int, markerMask)
 
-//=============================================================================
+  //=============================================================================
 //
 //  Line State
 //
@@ -473,19 +500,20 @@ DeclareSciCallV1(SetIdleStyling, SETIDLESTYLING, int, idlestyle)
 //
 //  Indicators
 //
-DeclareSciCallV2(IndicSetStyle, INDICSETSTYLE, int, indicatorID, int, style)
-DeclareSciCallV2(IndicSetFore, INDICSETFORE, int, indicatorID, COLORREF, colour)
-DeclareSciCallV2(IndicSetUnder, INDICSETUNDER, int, indicatorID, bool, under)
-DeclareSciCallV2(IndicSetHoverStyle, INDICSETHOVERSTYLE, int, indicatorID, int, style)
-DeclareSciCallV2(IndicSetHoverFore, INDICSETHOVERFORE, int, indicatorID, COLORREF, colour)
-DeclareSciCallV2(IndicSetAlpha, INDICSETALPHA, int, indicatorID, int, alpha)
-DeclareSciCallV2(IndicSetOutlineAlpha, INDICSETOUTLINEALPHA, int, indicatorID, int, alpha)
-DeclareSciCallV1(SetIndicatorCurrent, SETINDICATORCURRENT, int, indicatorID)
+DeclareSciCallV2(IndicSetStyle, INDICSETSTYLE, int, indicID, int, style)
+DeclareSciCallR1(IndicGetFore, INDICGETFORE, COLORREF, int, indicID)
+DeclareSciCallV2(IndicSetFore, INDICSETFORE, int, indicID, COLORREF, colour)
+DeclareSciCallV2(IndicSetUnder, INDICSETUNDER, int, indicID, bool, under)
+DeclareSciCallV2(IndicSetHoverStyle, INDICSETHOVERSTYLE, int, indicID, int, style)
+DeclareSciCallV2(IndicSetHoverFore, INDICSETHOVERFORE, int, indicID, COLORREF, colour)
+DeclareSciCallV2(IndicSetAlpha, INDICSETALPHA, int, indicID, int, alpha)
+DeclareSciCallV2(IndicSetOutlineAlpha, INDICSETOUTLINEALPHA, int, indicID, int, alpha)
+DeclareSciCallV1(SetIndicatorCurrent, SETINDICATORCURRENT, int, indicID)
 DeclareSciCallV2(IndicatorFillRange, INDICATORFILLRANGE, DocPos, position, DocPos, length)
 DeclareSciCallV2(IndicatorClearRange, INDICATORCLEARRANGE, DocPos, position, DocPos, length)
-DeclareSciCallR2(IndicatorValueAt, INDICATORVALUEAT, int, int, indicatorID, DocPos, position)
-DeclareSciCallR2(IndicatorStart, INDICATORSTART, int, int, indicatorID, DocPos, position)
-DeclareSciCallR2(IndicatorEnd, INDICATOREND, int, int, indicatorID, DocPos, position)
+DeclareSciCallR2(IndicatorValueAt, INDICATORVALUEAT, int, int, indicID, DocPos, position)
+DeclareSciCallR2(IndicatorStart, INDICATORSTART, int, int, indicID, DocPos, position)
+DeclareSciCallR2(IndicatorEnd, INDICATOREND, int, int, indicID, DocPos, position)
 
 //=============================================================================
 //
@@ -539,8 +567,11 @@ DeclareSciCallV1(SetUndoCollection, SETUNDOCOLLECTION, bool, bCollectUndo)
 //  SetTechnology
 //
 DeclareSciCallV1(SetBufferedDraw, SETBUFFEREDDRAW, bool, value)
+DeclareSciCallR0(GetTechnology, GETTECHNOLOGY, int)
 DeclareSciCallV1(SetTechnology, SETTECHNOLOGY, int, technology)
+DeclareSciCallR0(GetBidirectional, GETBIDIRECTIONAL, int)
 DeclareSciCallV1(SetBidirectional, SETBIDIRECTIONAL, int, direction)
+
 DeclareSciCallV1(SetCharacterCategoryOptimization, SETCHARACTERCATEGORYOPTIMIZATION, int, count)
 
 //=============================================================================
@@ -562,6 +593,7 @@ DeclareSciCallR0(IsSelectionRectangle, SELECTIONISRECTANGLE, bool)
 #define Sci_IsDocEmpty() (SciCall_GetTextLength() <= 0LL)
 
 #define Sci_IsThinSelection() (SciCall_GetSelectionMode() == SC_SEL_THIN)
+#define Sci_IsStreamSelection() (SciCall_GetSelectionMode() == SC_SEL_STREAM)
 #define Sci_IsMultiSelection() ((SciCall_GetSelections() > 1) && !SciCall_IsSelectionRectangle())
 #define Sci_IsMultiOrRectangleSelection() ((SciCall_GetSelections() > 1) || SciCall_IsSelectionRectangle())
 
@@ -588,6 +620,8 @@ DeclareSciCallR0(IsSelectionRectangle, SELECTIONISRECTANGLE, bool)
 //~#define Sci_GetDocEndPosition() (SciCall_GetTextLength() - 1)
 #define Sci_GetDocEndPosition() SciCall_GetLineEndPosition(SciCall_GetLineCount())
 
+#define Sci_ClampAlpha(alpha) clampi((alpha), SC_ALPHA_TRANSPARENT, /*SC_ALPHA_OPAQUE*/SC_ALPHA_NOALPHA)
+  
 // max. line length in range (incl. line-breaks)
 inline DocPos Sci_GetRangeMaxLineLength(DocLn iBeginLine, DocLn iEndLine) {
   DocPos iMaxLineLen = 0;
@@ -599,15 +633,17 @@ inline DocPos Sci_GetRangeMaxLineLength(DocLn iBeginLine, DocLn iEndLine) {
 }
 
 // respect VSlop settings 
-inline void Sci_ScrollChooseCaret()      { SciCall_ScrollCaret(); SciCall_ChooseCaretX(); }
-inline void Sci_ScrollToLine(DocLn line) { SciCall_EnsureVisible(line); SciCall_ScrollRange(SciCall_PositionFromLine(line), SciCall_GetLineEndPosition(line)); }
-inline void Sci_ScrollToCurrentLine()    { Sci_ScrollToLine(Sci_GetCurrentLineNumber()); }
+inline void Sci_GotoPosChooseCaret(const DocPos pos) { SciCall_GotoPos(pos); SciCall_ChooseCaretX(); }
+inline void Sci_ScrollChooseCaret() { SciCall_ScrollCaret(); SciCall_ChooseCaretX(); }
+inline void Sci_ScrollToLine(const DocLn line) { SciCall_EnsureVisible(line); SciCall_ScrollRange(SciCall_PositionFromLine(line), SciCall_GetLineEndPosition(line)); }
+inline void Sci_ScrollToCurrentLine() { Sci_ScrollToLine(Sci_GetCurrentLineNumber()); }
 
 
 #define Sci_ReplaceTarget(M,L,T) (((M) == SCI_REPLACETARGET) ? SciCall_ReplaceTarget((L),(T)) : SciCall_ReplaceTargetRe((L),(T)))
 
 //  if iRangeEnd == -1 : apply style from iRangeStart to document end
 #define Sci_ApplyLexerStyle(B, E) SciCall_Colourise((DocPos)(B), (DocPos)(E));
+#define Sci_LexerStyleAll() SciCall_Colourise(0, -1)
 
 #define Sci_DisableMouseDWellNotification()  SciCall_SetMouseDWellTime(SC_TIME_FOREVER)  
 

@@ -57,7 +57,7 @@ STRINGTABLE
 BEGIN
     IDT_FILE_NEW            "新規"
     IDT_FILE_OPEN           "開く"
-    IDT_FILE_BROWSE         "ファイラでブラウズ"
+    IDT_FILE_BROWSE         "ファイラで開く"
     IDT_FILE_SAVE           "保存"
     IDT_FILE_RECENT         "閲覧履歴"
     IDT_EDIT_UNDO           "元に戻す"
@@ -92,6 +92,7 @@ BEGIN
     IDT_VIEW_TOGGLE_VIEW     "単語一望モード"
     IDT_VIEW_CHASING_DOCTAIL "編集制限モード"
     IDT_VIEW_PIN_ON_TOP      "常に手前に表示"
+    IDT_GREP_WIN_TOOL        "ファイル群から検索"
 END
 
 STRINGTABLE
@@ -102,7 +103,7 @@ BEGIN
     IDS_MUI_UNTITLED        "無題"
     IDS_MUI_TITLEEXCERPT    """%s"""
     IDS_MUI_READONLY        "(読み取り専用)"
-    IDS_MUI_LOADFILE        "読み込み中 ""%s""..."
+    IDS_MUI_LOADFILE        "読込中 ""%s""..."
     IDS_MUI_SAVEFILE        "保存中 ""%s""..."
     IDS_MUI_PRINTFILE       "%i ページを印刷..."
     IDS_MUI_SAVINGSETTINGS  "設定保存中..."
@@ -111,27 +112,29 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_MUI_FILTER_ALL      "すべてのファイル(*.*)|*.*|"
-    IDS_MUI_FILTER_EXE      "実行ファイル(*.exe;*.com;*.bat;*.cmd;*.lnk;*.pif)|*.exe;*.com;*.bat;*.cmd;*.lnk;*.pif|すべてのファイル(*.*)|*.*|"
-    IDS_MUI_FILTER_INI      "設定ファイル(*.ini)|*.ini|すべてのファイル(*.*)|*.*|"
+    IDS_MUI_FILTER_ALL      "すべてのファイル (*.*)|*.*|"
+    IDS_MUI_FILTER_EXE      "実行ファイル (*.exe;*.com;*.bat;*.cmd;*.lnk;*.pif)|*.exe;*.com;*.bat;*.cmd;*.lnk;*.pif|すべてのファイル (*.*)|*.*|"
+    IDS_MUI_FILTER_INI      "設定ファイル (*.ini)|*.ini|すべてのファイル (*.*)|*.*|"
     IDS_MUI_FILTER_BITMAP   "ビットマップファイル (*.bmp)|*.bmp|すべてのファイル (*.*)|*.*|"
     IDS_MUI_OPENWITH        "開きたいプログラムがあるフォルダを指定してください。"
     IDS_MUI_FAVORITES       "お気に入りのフォルダを指定してください。"
     IDS_MUI_BACKSLASHHELP   "バックスラッシュ変換\n\n\\a\tアラート (BEL, Ascii 7, ベル)\n\\b\tバックスペース (BS, Ascii 8)\n\\f\t改ページ (FF, Ascii 12)\n\\n\t改行文字 (LF, Ascii 10)\n\\r\t復帰文字 (CR, Ascii 13, キャリッジリターン)\n\\t\tタブ (HT, Ascii 9, 水平タブ)\n\\v\t垂直タブ (VT, Ascii 11)\n\\0oo\t8進数表記\n\\u####\t16進数表記\n\\xhh\t16進数表記\n\\\\\tバックスラッシュ自体"
-    IDS_MUI_REGEXPHELP      "正規表現の構文 (複数行)\n\n.\t何らかの1文字\n^\t行の先頭\n$\t行の末尾\n\\<\t単語の先頭\n\\>\t単語の末尾\n\\b\t単語の区切り(アルファベットの単語)\n[...]\t指定した文字群 ([abc]) または - で範囲 ([a-z])\n[^...]\t上記で指定した文字ではない(^で除外)\n\\d\t10進数1文字(半角数字)\n\\D\t10進数ではない(上記以外)\n\\s\t空白文字(何らか)\n\\S\t空白文字ではない(上記以外)\n\\w\t言葉の1文字(日本語含む)\n\\W\t非言語文字(上記以外)\n\\x\t下記用のエスケープ文字\n\\xHH\t16進コードHHで1文字\n?\t直前の指定があるかないかに一致(0回か1回)\n*\t直前の指定の0回以上の繰り返しに合致\n+\t直前の指定の1回以上の繰り返しに合致\n*? か +?\t上記記号 ""?"" と ""+"" を最長マッチではなくする\n{n}\t繰り返し回数を指定 , 区切りで上限も\n(\t範囲指定の括弧開始\n)\t範囲指定の閉じ括弧\n|\tor 範囲括弧内でも使用可能\n\\n\t上記の括弧内を記憶し置換時に参照する\n\t\\1から\\9まで順に対応括弧内の文字列を呼び出す\n"
+    IDS_MUI_REGEXPHELP      "正規表現の構文 (複数行)\n\n.\t何らかの1文字\n^\t行の先頭\n$\t行の末尾\n\\<\t単語の先頭\n\\>\t単語の末尾\n\\b\t単語の区切り(アルファベットの単語)\n[...]\t指定した文字群 ([abc]) または - で範囲 ([a-z])\n[^...]\t上記で指定した文字ではない(^で除外)\n\\d\t10進数1文字(半角数字)\n\\D\t10進数ではない(上記以外)\n\\s\t空白文字(何らか)\n\\S\t空白文字ではない(上記以外)\n\\w\t言葉の1文字(日本語含む)\n\\W\t非言語文字(上記以外)\n\\x\t下記用のエスケープ文字\n\\xHH\t16進コードHHで1文字\n?\t直前文字0回か1回に合致\n*\t直前文字0回以上の繰り返し\n+\t直前文字1回以上の繰り返し\n*? か +?\t上記記号 ""?"" と ""+"" を最長合致ではなくする\n{n}\t繰り返し回数を指定 , 区切りで上限も\n(\t範囲指定の括弧開始\n)\t範囲指定の閉じ括弧\n|\tor 範囲括弧内でも使用可能\n\\n\t上記の括弧内を記憶し置換時に参照する\n\t\\1から\\9まで順に対応括弧内の文字列を呼び出す\n"
     IDS_MUI_WILDCARDHELP    "ワイルドカード検索\n\n*\t0文字以上の文字列に合致\n?\tちょうど1文字に合致"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_MUI_ERR_LOADFILE    "読み込み失敗 ""%s"""
+    IDS_MUI_ERR_LOADFILE    "読込失敗 ""%s"""
     IDS_MUI_ERR_SAVEFILE    "保存失敗 ""%s"""
-    IDS_MUI_ERR_BROWSE      "ファイルブラウザプラグインがありません。\nこのプラグイン MiniPath は https://rizonesoft.com からダウンロードできます。"
+    IDS_MUI_ERR_DLG_FORMAT  "エラー '%s', 原因:\n%s(ID:%d)\n"
+    IDS_MUI_ERR_BROWSE      "ファイラーのプラグインがありません。\nこのプラグイン MiniPath は以下からダウンロードできます。 https://rizonesoft.com"
+    IDS_MUI_ERR_GREPWIN     "ファイル検索プラグインが見つかりません。\nファイル検索プラグインの grepWinNP3 は以下からダウンロードできます。https://rizonesoft.com"
     IDS_MUI_ERR_MRUDLG      "選択したファイルにアクセスできません。\n一覧から除去しますか？"
     IDS_MUI_ERR_CREATELINK  "デスクトップへのショートカット作成時にエラーが発生しました。"
     IDS_MUI_ERR_PREVWINDISABLED
                             "現在 Notepad3 のウィンドウはビジー状態か､ダイアログを表示しています。\nNotepad3 のウィンドウを新たに開きますか？"
-    IDS_MUI_ERR_ENCODINGNA  "このコンピュータでは、選択した文字コード用のコードページ変換テーブルが利用できません。"
+    IDS_MUI_ERR_ENCODINGNA  "このパソコンでは、選択した文字コード用のコードページ変換テーブルが利用できません。"
     IDS_MUI_ERR_UNICODE     "Unicode への変換中にエラーが発生しました。\nファイルを保存するとデータが失われるかもしれません。"
     IDS_MUI_ERR_BITMAP      "ビットマップファイルの読み込みエラー: %s\n必要な寸法: %i x %i (横幅 >= %i x 高さ)."
     IDS_MUI_ERR_ELEVATED_RIGHTS
@@ -147,7 +150,7 @@ BEGIN
     IDS_MUI_ERR_ADMINEXE    "管理ツールが見つかりません。\nNotepad3 の公式サイトを開きますか？ https://rizonesoft.com"
     IDS_MUI_WARN_LOAD_BIG_FILE
                             "大容量のファイルです。このファイルを開きますか？\n\t(サイズ: %s >= %s)!\n(配色や構文ハイライトは適用されません!)"
-    IDS_MUI_ERR_FILE_TOO_LARGE 
+    IDS_MUI_ERR_FILE_TOO_LARGE
                             "大容量すぎて処理できません！ (サイズ: %s)"
     IDS_MUI_WARN_UNKNOWN_EXT
                             "%s は設定のない拡張子です。\n読み込みますか？"
@@ -155,6 +158,8 @@ BEGIN
     IDS_MUI_EOLMODENAME_CRLF   "Windows (CR+LF)"
     IDS_MUI_EOLMODENAME_LF     "Unix/Mac (LF)"
     IDS_MUI_EOLMODENAME_CR     "Old Mac (CR)"
+    IDS_MUI_WARN_NORMALIZE_EOLS
+                            "すべての改行を「%s」に統一しますか?"
 END
 
 STRINGTABLE
@@ -177,8 +182,10 @@ BEGIN
     IDS_MUI_SAVEDSETTINGS   "設定が保存されました。"
     IDS_MUI_CREATEINI_FAIL  "設定ファイルの作成に失敗しました。"
     IDS_MUI_WRITEINI_FAIL   "設定ファイルへの書き込みに失敗しました。"
+    IDS_MUI_INIFILE_READONLY
+                            "設定ファイルは読み取り専用です。無視して設定を上書しますか？"
     IDS_MUI_SETTINGSNOTSAVED
-                            "設定ファイルがありません。\n配色の変更を保つには、すぐに設定を保存するか(F7)、配色の設定(Ctrl+F12)から配色設定をエクスポートしてください。"
+                            "設定ファイルがありません。\n配色の変更を保存するには、すぐに設定を保存するか(F7)、配色の設定(Ctrl+F12)から配色設定をエクスポートしてください。"
 END
 
 STRINGTABLE
@@ -192,6 +199,7 @@ BEGIN
     IDS_MUI_URL_OPEN_BROWSER "\nCtrl + クリック : ブラウザーでリンクを開きます。"
     IDS_MUI_INF_PRSVFILEMODTM
                              "元ファイルの更新日時のままにします。\nこのセッションでのみ有効となります。"
+    IDS_MUI_OUT_OFF_OCCMRK   "単語出現マーカーが枯渇しています (しおり/強調表示)!"
 END
 
 STRINGTABLE
@@ -244,10 +252,15 @@ STRINGTABLE
 BEGIN
     IDS_MUI_MENU_LANGUAGE   "言語(&L)"
     IDS_MUI_MENU_THEMES     "配色テーマ(&S)"
-    IDM_THEMES_DEFAULT      "初期設定"
-    IDM_THEMES_FILE_ITEM    "標準設定"
+    IDM_THEMES_DEFAULT      "初期設定(&F)"
+    IDM_THEMES_FILE_ITEM    "標準設定(&S)"
     IDS_MUI_STATUSBAR_PREFIXES "行 ,列 ,選 ,選B ,選行 ,見 ,,,,,,,字 ,置 ,式 ,"
     IDS_MUI_STATUSBAR_POSTFIXES ",,,,,,,,,,,,,,,"
+    IDS_CLEAR_ALL           "すべて削除"
+    IDS_MUI_CLEAR_FIND_HISTORY
+                            "検索履歴を消去"
+    IDS_MUI_CLEAR_REPL_HISTORY
+                            "置換履歴を消去"
 END
 
 STRINGTABLE
@@ -273,9 +286,9 @@ Notepad3 \t[/?] [...[文字コード]] [...[改行コード]] [/e] [/g] [/m] [/l
 /d\t標準配色を指定\r\n\
 /h\tWEBソースコードの配色を指定\r\n\
 /x\tXML文書の配色を指定\r\n\
-/c\t新しいウインドウを開きクリップボードの内容を貼り付け\r\n\
+/c\t新規ウインドウを開きクリップボードの内容を貼り付け\r\n\
 /b\tクリップボード履歴表示モードで開く\r\n\
-/n\t新しいウィンドウで開く (/ns ファイルは単一のインスタンス)\r\n\
+/n\t新規ウィンドウで開く (/ns ファイルは単一のインスタンス)\r\n\
 /r\tひとつウインドウを再利用 (/rs 同じく単一のインスタンス\r\n\
 /p\tウィンドウの位置とサイズを指定 [/p x,y,sizex,y[,max]] (/p0, /ps,\r\n\t/pf,l,t,r,b,m)\r\n\
 \tor /p <left>,<top>,<width>,<height>,<max>    [すべて整数]\r\n\
@@ -287,7 +300,7 @@ Notepad3 \t[/?] [...[文字コード]] [...[改行コード]] [/e] [/g] [/m] [/l
 /v\tすぐに印刷して終了する\r\n\
 /vd\tファイルの印刷(印刷ダイアログを開く)\r\n\
 /y\t相対パスの場合に environment PATH を探す\r\n\
-/z\t「次へ」を省略 (レジストリでメモ帳を置換している際に有効化)\r\n\r\n\
+/z\t「次へ」を省略 (レジストリでメモ帳を置換している際に有効)\r\n\r\n\
 例:\r\n\
 Notepad3 /utf8sig /crlf d:\\temp\\Test.txt\r\n\
  \t... 新規ファイル Test.txt を開く: 文字コード UTF-8-BOM, 改行 CRLF\r\n\
@@ -302,7 +315,7 @@ IDS_MUI_STYLEEDIT_HELP "\
 設定書式(各指定は省略可能, foreは文字色):\r\n\
 font:フォント名; size:[+/-]nn.mm; bold; italic; underline;\r\n\
 fore:#ffffff; back:#bbbbbb; eolfilled; indic_gradient\r\n\r\n\
-コピー&ペーストやドラッグ&ドロップでも指定が変更できます。\
+コピーペーストやドラッグドロップでも指定を変更できます。\
 "
 
 END
@@ -311,7 +324,7 @@ STRINGTABLE
 BEGIN
 
 IDS_MUI_ABOUT_RTF_0  "{\
-\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\fswiss\\fcharset134 Arial;}{\\f2\\fswiss\\fcharset128 Arial;}}\
+\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Segoe UI;}{\\f1\\fswiss\\fcharset134 Segoe UI;}{\\f2\\fswiss\\fcharset128 Segoe UI;}}\
 {\\colortbl ;\\red80\\green160\\blue80;}\
 \\tx3500\\tx7000\\fs18\
 \\cf0 \\fs20\\b1\\ul1 \\f1\\b0\\'e9\\'5f\\'b0\\'6b\\'a3\\'ba\\f0\\b1\\ul0\\b0\\fs18\\par\
@@ -332,44 +345,8 @@ IDS_MUI_ABOUT_RTF_5  "\
 \\cf0 \\fs20\\b1\\ul1 \\f2\\'83\\'89\\'83\\'43\\'83\\'5a\\'83\\'93\\'83\\'58\\f0 :\\ul0\\b0\\fs18\\par\
 "
 
-IDS_MUI_ABOUT_RTF_6  "\
-\\cf0 \\fs20\\b1\\ul1 Notepad3 \\f2\\'83\\'89\\'83\\'43\\'83\\'5a\\'83\\'93\\'83\\'58\\f0 :\\ul0\\b0\\fs18\\par\
-\\cf0 \\par\
-\\cf0 Notepad3 and MiniPath Copyright \\u0169   2008-2020 Rizonesoft, All rights reserved.\\par\
-\\cf0 https://www.rizonesoft.com\\par\
-\\cf0 \\par\
-\\cf0 Redistribution and use in source and binary forms, with or without modification,\\par\
-\\cf0 are permitted provided that the following conditions are met:\\par\
-\\cf0 \\par\
-\\cf0 1. Redistributions of source code must retain the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer.\\par\
-\\cf0 \\par\
-\\cf0 2. Redistributions in binary form must reproduce the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer in the\\par\
-\\cf0 documentation and/or other materials provided with the distribution.\\par\
-\\cf0 \\par\
-\\cf0 3. Neither the name of Florian Balmer nor the names of its contributors\\par\
-\\cf0 may be used to endorse or promote products derived from this software\\par\
-\\cf0 without specific prior written permission.\\par\
-\\cf0 \\par\
-\\cf0 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\\par\
-\\cf0 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED\\par\
-\\cf0 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\\par\
-\\cf0 PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\\par\
-\\cf0 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\\par\
-\\cf0 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\\par\
-\\cf0 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\\par\
-\\cf0 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\\par\
-\\cf0 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\\par\
-\\cf0 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\\par\
-\\cf0 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\\par\
-}"
-
 END
 
-//
-// Lines added to synchronize the number of lines of all "strings_xx_yy.rc" files.
-//
 #endif    // Japanese (Japan) resources
 /////////////////////////////////////////////////////////////////////////////
 

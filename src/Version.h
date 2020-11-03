@@ -30,9 +30,9 @@
 #define VERSION_FILEVERSION_NUM      VERSION_MAJOR,VERSION_MINOR,VERSION_REV,VERSION_BUILD
 
 #if defined(_WIN64)
-#define  VERSION_FILEVERSION_LONG    APPNAME (64-bit)  _V(VERSION_FILEVERSION)  VERSION_PATCH
+#define  VERSION_FILEVERSION_LONG    APPNAME (x64)  _V(VERSION_FILEVERSION)  VERSION_PATCH
 #else
-#define  VERSION_FILEVERSION_LONG    APPNAME (32-bit) _V(VERSION_FILEVERSION)  VERSION_PATCH
+#define  VERSION_FILEVERSION_LONG    APPNAME (x86) _V(VERSION_FILEVERSION)  VERSION_PATCH
 #endif
 
 
@@ -73,8 +73,22 @@
 #undef VER_CPL
 
 #if defined(_MSC_VER)
-    #if (_MSC_VER == 1925)
-        #if(_MSC_FULL_VER >= 192528612)
+    #if (_MSC_VER == 1927)
+        #if(_MSC_FULL_VER >= 192729111)
+            #define VER_CPL     MS Visual C++ 2019 v16.7.(1-3)
+        #elif(_MSC_FULL_VER >= 192729110)
+            #define VER_CPL     MS Visual C++ 2019 v16.7.0
+        #endif
+    #elif (_MSC_VER == 1926)
+        #if(_MSC_FULL_VER >= 192628806)
+            #define VER_CPL     MS Visual C++ 2019 v16.6.(1-5)
+        #elif(_MSC_FULL_VER >= 192628805)
+            #define VER_CPL     MS Visual C++ 2019 v16.6.0
+        #endif
+    #elif (_MSC_VER == 1925)
+        #if(_MSC_FULL_VER >= 192528614)
+            #define VER_CPL     MS Visual C++ 2019 v16.5.(4-5)
+        #elif(_MSC_FULL_VER >= 192528612)
             #define VER_CPL     MS Visual C++ 2019 v16.5.(2-3)
         #elif(_MSC_FULL_VER >= 192528611)
             #define VER_CPL     MS Visual C++ 2019 v16.5.1
@@ -124,13 +138,13 @@
             #define VER_CPL     MS Visual C++ 2017 v15.9.11
         #elif(_MSC_FULL_VER >= 191627027)
             #define VER_CPL     MS Visual C++ 2017 v15.9.(7-10)
-        #elif(_MSC_FULL_VER >= 191627026) 
+        #elif(_MSC_FULL_VER >= 191627026)
             #define VER_CPL     MS Visual C++ 2017 v15.9.(5-6)
-        #elif(_MSC_FULL_VER >= 191627025) 
+        #elif(_MSC_FULL_VER >= 191627025)
             #define VER_CPL     MS Visual C++ 2017 v15.9.4
-        #elif(_MSC_FULL_VER >= 191627024) 
+        #elif(_MSC_FULL_VER >= 191627024)
             #define VER_CPL     MS Visual C++ 2017 v15.9.(2-3)
-        #elif(_MSC_FULL_VER >= 191627023) 
+        #elif(_MSC_FULL_VER >= 191627023)
             #define VER_CPL     MS Visual C++ 2017 v15.9.(0-1)
         #endif
     #elif (_MSC_VER == 1915)

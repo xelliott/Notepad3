@@ -92,6 +92,7 @@ BEGIN
     IDT_VIEW_TOGGLE_VIEW     "Widok skupiony"
     IDT_VIEW_CHASING_DOCTAIL "Dziennik monitorowania"
     IDT_VIEW_PIN_ON_TOP      "Zawsze na wierzchu"
+    IDT_GREP_WIN_TOOL        "Szukaj w plikach"
 END
 
 STRINGTABLE
@@ -126,7 +127,9 @@ STRINGTABLE
 BEGIN
     IDS_MUI_ERR_LOADFILE    "Błąd podczas ładowania ""%s""."
     IDS_MUI_ERR_SAVEFILE    "Błąd podczas zapisu ""%s""."
+    IDS_MUI_ERR_DLG_FORMAT  "Błąd '%s', powód:\n%s(ID:%d)\n"
     IDS_MUI_ERR_BROWSE      "Nie znaleziono wtyczki przeglądarki pliku.\nWtyczkę przeglądarki pliku do MiniPath można pobrać z https://rizonesoft.com."
+    IDS_MUI_ERR_GREPWIN     "Nie znaleziono wtyczki wyszukiwania pliku.\Wtyczkę wyszukiwania pliku programu grepWinNP3 można pobrać ze strony https://rizonesoft.com."
     IDS_MUI_ERR_MRUDLG      "Brak dostępu do wybranego pliku!\nCzy chcesz usunąć go z listy?"
     IDS_MUI_ERR_CREATELINK  "Błąd podczas tworzenia skrótu na Pulpicie."
     IDS_MUI_ERR_PREVWINDISABLED
@@ -147,7 +150,7 @@ BEGIN
     IDS_MUI_ERR_ADMINEXE    "Nie znaleziono narzędzia administracyjnego.\nSprawdź stronę https://rizonesoft.com?"
     IDS_MUI_WARN_LOAD_BIG_FILE
                             "Czy na pewno chcesz otworzyć ten duży plik?\n\t(rozmiar: %s >= %s)!\n(Projekt i podświetlenie składni nie będzie zastosowane!)"
-    IDS_MUI_ERR_FILE_TOO_LARGE 
+    IDS_MUI_ERR_FILE_TOO_LARGE
                             "Nie można przetworzyć tego pliku, jest zbyt duży (size: %s)!"
     IDS_MUI_WARN_UNKNOWN_EXT
                             "Nieznane rozszerzenie nazwy pliku (%s)!\nCzy mimo to załadować?"
@@ -155,6 +158,8 @@ BEGIN
     IDS_MUI_EOLMODENAME_CRLF   "Windows (CR+LF)"
     IDS_MUI_EOLMODENAME_LF     "Unix/Mac (LF)"
     IDS_MUI_EOLMODENAME_CR     "Old Mac (CR)"
+    IDS_MUI_WARN_NORMALIZE_EOLS
+                            "Czy chcesz znormalizować wszystkie zakończenia linii '%s'?"
 END
 
 STRINGTABLE
@@ -177,6 +182,8 @@ BEGIN
     IDS_MUI_SAVEDSETTINGS   "Bieżące ustawienia programu zostały zapisane."
     IDS_MUI_CREATEINI_FAIL  "Błąd podczas tworzenia pliku konfiguracyjnego."
     IDS_MUI_WRITEINI_FAIL   "Błąd zapisywania ustawień do pliku konfiguracyjnego."
+    IDS_MUI_INIFILE_READONLY
+                            "Plik konfiguracyjny tylko do odczytu - zignorować (pominąć) ustawienia?"
     IDS_MUI_SETTINGSNOTSAVED
                             "Nie znaleziono istniejącego pliku konfiguracyjnego.\nAby zachować zmiany stylów, zapisz ustawienia (F7) lub wróć do schematu konfiguracji (Ctrl+F12) i eksportuj style."
 END
@@ -192,6 +199,7 @@ BEGIN
     IDS_MUI_URL_OPEN_BROWSER "\nCtrl + Kliknij, aby otworzyć link w przeglądarce."
     IDS_MUI_INF_PRSVFILEMODTM
                              "Włączono zachowanie znacznika czasu w modyfikacji pliku.\nTa opcja pozostanie dla tej sesji!"
+    IDS_MUI_OUT_OFF_OCCMRK   "Kończą się znaczniki występowania (Zakładka/Podświetlenie)!"
 END
 
 STRINGTABLE
@@ -244,10 +252,15 @@ STRINGTABLE
 BEGIN
     IDS_MUI_MENU_LANGUAGE   "&Język"
     IDS_MUI_MENU_THEMES     "Wybór &schematów"
-    IDM_THEMES_DEFAULT      "Domyślne"
-    IDM_THEMES_FILE_ITEM    "Ustawienia standardowe"
+    IDM_THEMES_DEFAULT      "&Domyślne"
+    IDM_THEMES_FILE_ITEM    "&Ustawienia standardowe"
     IDS_MUI_STATUSBAR_PREFIXES "Ln  ,kol  ,Sel  ,Sb  ,SLn  ,Occ  ,,,,,,,Ch  ,Repl  ,Podn  ,"
     IDS_MUI_STATUSBAR_POSTFIXES ",,,,,,,,,,,,,,,"
+    IDS_CLEAR_ALL           "Wyczyść wszystko"
+    IDS_MUI_CLEAR_FIND_HISTORY
+                            "Wyczyść Znajdź Historię"
+    IDS_MUI_CLEAR_REPL_HISTORY
+                            "Wyczyść Zamień Historię"
 END
 
 STRINGTABLE
@@ -311,7 +324,7 @@ STRINGTABLE
 BEGIN
 
 IDS_MUI_ABOUT_RTF_0  "{\
-\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}{\\f1\\fswiss\\fcharset238 Arial;}}\
+\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Segoe UI;}{\\f1\\fswiss\\fcharset238 Segoe UI;}}\
 {\\colortbl ;\\red80\\green160\\blue80;}\
 \\tx3500\\tx7000\\fs18\
 \\cf0 \\fs20\\b1\\ul1 \\f1Rozw\\'f3j\\f0 :\\ul0\\b0\\fs18\\par\
@@ -332,44 +345,8 @@ IDS_MUI_ABOUT_RTF_5  "\
 \\cf0 \\fs20\\b1\\ul1 Licencje:\\ul0\\b0\\fs18\\par\
 "
 
-IDS_MUI_ABOUT_RTF_6  "\
-\\cf0 \\fs20\\b1\\ul1 Licencja Notepad3:\\ul0\\b0\\fs18\\par\
-\\cf0 \\par\
-\\cf0 Notepad3 and MiniPath Copyright \\u0169   2008-2020 Rizonesoft, All rights reserved.\\par\
-\\cf0 https://www.rizonesoft.com\\par\
-\\cf0 \\par\
-\\cf0 Redistribution and use in source and binary forms, with or without modification,\\par\
-\\cf0 are permitted provided that the following conditions are met:\\par\
-\\cf0 \\par\
-\\cf0 1. Redistributions of source code must retain the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer.\\par\
-\\cf0 \\par\
-\\cf0 2. Redistributions in binary form must reproduce the above copyright\\par\
-\\cf0 notice, this list of conditions and the following disclaimer in the\\par\
-\\cf0 documentation and/or other materials provided with the distribution.\\par\
-\\cf0 \\par\
-\\cf0 3. Neither the name of Florian Balmer nor the names of its contributors\\par\
-\\cf0 may be used to endorse or promote products derived from this software\\par\
-\\cf0 without specific prior written permission.\\par\
-\\cf0 \\par\
-\\cf0 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\\par\
-\\cf0 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED\\par\
-\\cf0 TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A\\par\
-\\cf0 PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT\\par\
-\\cf0 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,\\par\
-\\cf0 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT\\par\
-\\cf0 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,\\par\
-\\cf0 DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY\\par\
-\\cf0 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\\par\
-\\cf0 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\\par\
-\\cf0 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\\par\
-}"
-
 END
 
-//
-// Lines added to synchronize the number of lines of all "strings_xx_yy.rc" files.
-//
 #endif    // Polish (Poland) resources
 /////////////////////////////////////////////////////////////////////////////
 

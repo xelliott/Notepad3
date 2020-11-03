@@ -22,7 +22,7 @@
 #include <math.h>
 #include <shlwapi.h>
 #include <heapapi.h>
-#include <versionhelpers.h>
+#include <VersionHelpers.h>
 
 #include "Scintilla.h"
 
@@ -157,9 +157,12 @@ inline bool IsAsyncKeyDown(int key) { return (((GetAsyncKeyState(key) >> 8) & 0x
 
 // ----------------------------------------------------------------------------
 
-#define SendWMCommandEx(hwnd, id, extra)  SendMessage(hwnd, WM_COMMAND, MAKEWPARAM((id), (extra)), 0)
-#define SendWMCommand(hwnd, id)           SendWMCommandEx(hwnd, (id), 1)
-#define PostWMCommand(hwnd, id)           PostMessage(hwnd, WM_COMMAND, MAKEWPARAM((id), 1), 0)
+#define SendWMCommandEx(hwnd, id, extra)  SendMessage((hwnd), WM_COMMAND, MAKEWPARAM((id), (extra)), 0)
+#define SendWMCommand(hwnd, id)           SendWMCommandEx((hwnd), (id), 1)
+#define PostWMCommand(hwnd, id)           PostMessage((hwnd), WM_COMMAND, MAKEWPARAM((id), 1), 0)
+
+#define SetWindowStyle(hwnd, style)			  SetWindowLong((hwnd), GWL_STYLE, (style))
+#define SetWindowExStyle(hwnd, style)     SetWindowLong((hwnd), GWL_EXSTYLE, (style))
 
 //==== StrIs(Not)Empty() =============================================
 
@@ -188,28 +191,12 @@ void GetWinVersionString(LPWSTR szVersionStr, size_t cchVersionStr);
 #define RGB_GET_G(color)    ((BYTE)(((0xFF<<8)&(color))>>8))
 #define RGB_GET_B(color)    ((BYTE)(((0xFF<<16)&(color))>>16))
 
+#define GET_X_LPARAM(lp)    ((int)(short)LOWORD(lp))  // windowsx.h
+#define GET_Y_LPARAM(lp)    ((int)(short)HIWORD(lp))  // windowsx.h
+
 // ----------------------------------------------------------------------------
 
 bool SetClipboardTextW(HWND hwnd, LPCWSTR pszTextW, size_t cchTextW);
-HBITMAP ConvertIconToBitmap(const HICON hIcon, const int cx, const int cy);
-void SetUACIcon(const HMENU hMenu, const UINT nItem);
-
-// ----------------------------------------------------------------------------
-
-DPI_T GetCurrentPPI(HWND hwnd);
-
-void UpdateWindowLayoutForDPI(HWND hWnd, int x_96dpi, int y_96dpi, int w_96dpi, int h_96dpi);
-HBITMAP ResizeImageForCurrentDPI(HWND hwnd, HBITMAP hbmp);
-
-inline int ScaleIntToDPI_X(HWND hwnd, int val) { DPI_T const dpi = Scintilla_GetCurrentDPI(hwnd);  return MulDiv((val), dpi.x, USER_DEFAULT_SCREEN_DPI); }
-inline int ScaleIntToDPI_Y(HWND hwnd, int val) { DPI_T const dpi = Scintilla_GetCurrentDPI(hwnd);  return MulDiv((val), dpi.y, USER_DEFAULT_SCREEN_DPI); }
-inline int ScaleToCurrentDPIX(HWND hwnd, float fVal) { DPI_T const dpi = Scintilla_GetCurrentDPI(hwnd);  return float2int((fVal * dpi.x) / (float)USER_DEFAULT_SCREEN_DPI); }
-inline int ScaleToCurrentDPIY(HWND hwnd, float fVal) { DPI_T const dpi = Scintilla_GetCurrentDPI(hwnd);  return float2int((fVal * dpi.y) / (float)USER_DEFAULT_SCREEN_DPI); }
-inline int ScaleIntFontSizeW(HWND hwnd, int val) { DPI_T const dpi = Scintilla_GetCurrentDPI(hwnd);  DPI_T const ppi = GetCurrentPPI(hwnd);  return MulDiv((val), dpi.x, ppi.x); }
-inline int ScaleIntFontSizeH(HWND hwnd, int val) { DPI_T const dpi = Scintilla_GetCurrentDPI(hwnd);  DPI_T const ppi = GetCurrentPPI(hwnd);  return MulDiv((val), dpi.y, ppi.y); }
-inline int ScaleFontSize(HWND hwnd, float fSize) { DPI_T const dpi = Scintilla_GetCurrentDPI(hwnd);  DPI_T const ppi = GetCurrentPPI(hwnd);  return float2int((fSize * dpi.y) / (float)ppi.y); }
-inline int ScaleFractionalFontSize(HWND hwnd, float fSize) { DPI_T const dpi = Scintilla_GetCurrentDPI(hwnd);  DPI_T const ppi = GetCurrentPPI(hwnd);  return float2int((fSize * 10.0f * dpi.y) / (float)ppi.y) * 10; }
-
 
 // ----------------------------------------------------------------------------
 
@@ -234,8 +221,6 @@ inline int IsFullHD(HWND hwnd, int resX, int resY)
   return ((resX == 1920) && (resY == 1080)) ? 0 : (((resX < 1920) || (resY < 1080)) ? -1 : +1);
 }
 
-inline float GetBaseFontSize(HWND hwnd) { return ((IsFullHD(hwnd, -1, -1) < 0) ? 10.0f : 11.0f); }
-
 // ----------------------------------------------------------------------------
 
 HRESULT PrivateSetCurrentProcessExplicitAppUserModelID(PCWSTR AppID);
@@ -243,12 +228,11 @@ bool IsProcessElevated();
 //bool IsUserAdmin();
 bool IsUserInAdminGroup();
 bool IsRunAsAdmin();
-//bool SetExplorerTheme(HWND);
-
 
 bool BitmapMergeAlpha(HBITMAP hbmp,COLORREF crDest);
 bool BitmapAlphaBlend(HBITMAP hbmp,COLORREF crDest,BYTE alpha);
 bool BitmapGrayScale(HBITMAP hbmp);
+
 bool VerifyContrast(COLORREF cr1,COLORREF cr2);
 bool IsFontAvailable(LPCWSTR lpszFontName);
 
@@ -274,6 +258,7 @@ inline bool IsButtonUnchecked(HWND hwnd, int iButtonID) { return (IsDlgButtonChe
 
 bool ReadFileXL(HANDLE hFile, char* const lpBuffer, const size_t nNumberOfBytesToRead, size_t* const lpNumberOfBytesRead);
 bool WriteFileXL(HANDLE hFile, const char* const lpBuffer, const size_t nNumberOfBytesToWrite, size_t* const lpNumberOfBytesWritten);
+void PathGetAppDirectory(LPWSTR lpszDest, DWORD cchDest);
 bool GetKnownFolderPath(REFKNOWNFOLDERID, LPWSTR lpOutPath, size_t cchCount);
 void PathRelativeToApp(LPWSTR lpszSrc,LPWSTR lpszDest,int cchDest,bool,bool,bool);
 void PathAbsoluteFromApp(LPWSTR lpszSrc,LPWSTR lpszDest,int cchDest,bool);
@@ -285,7 +270,7 @@ bool PathCreateDeskLnk(LPCWSTR pszDocument);
 bool PathCreateFavLnk(LPCWSTR pszName,LPCWSTR pszTarget,LPCWSTR pszDir);
 
 void  ExpandEnvironmentStringsEx(LPWSTR lpSrc, DWORD dwSrc);
-void  PathCanonicalizeEx(LPWSTR lpszPath, DWORD cchBuffer);
+bool  PathCanonicalizeEx(LPWSTR lpszPath, DWORD cchPath);
 DWORD GetLongPathNameEx(LPWSTR lpszPath, DWORD cchBuffer);
 void  PathGetDisplayName(LPWSTR lpszDestPath, DWORD cchDestBuffer, LPCWSTR lpszSourcePath);
 DWORD NormalizePathEx(LPWSTR lpszPath, DWORD cchBuffer, bool bRealPath, bool bSearchPathIfRelative);
@@ -301,7 +286,7 @@ inline bool TrimSpcA(LPSTR lpString) {
 
 inline bool TrimSpcW(LPWSTR lpString) {
   if (!lpString || !*lpString) { return false; }
-  return (bool)StrTrimW(lpString, L" \t\v");
+  return (bool)StrTrim(lpString, L" \t\v");
 };
 
 #if (defined(UNICODE) || defined(_UNICODE))
@@ -321,26 +306,29 @@ void PathFixBackslashes(LPWSTR lpsz);
 size_t FormatNumberStr(LPWSTR lpNumberStr, size_t cch, int fixedWidth);
 bool SetDlgItemIntEx(HWND hwnd,int nIdItem,UINT uValue);
 
+UINT GetDlgItemTextW2MB(HWND hDlg, int nIDDlgItem, LPSTR lpString, int nMaxCount);
+UINT SetDlgItemTextMB2W(HWND hDlg, int nIDDlgItem, LPCSTR lpString);
+LRESULT ComboBox_AddStringMB2W(HWND hwnd, LPCSTR lpString);
 
-UINT    GetDlgItemTextW2MB(HWND hDlg,int nIDDlgItem,LPSTR lpString,int nMaxCount);
-UINT    SetDlgItemTextMB2W(HWND hDlg,int nIDDlgItem,LPSTR lpString);
-LRESULT ComboBox_AddStringMB2W(HWND hwnd,LPCSTR lpString);
 
-
+///////////////////////////////////////////////////////////////////////
+///  UINT  GDI CHARSET values  ==  Scintilla's  SC_CHARSET_XXX values
+///////////////////////////////////////////////////////////////////////
+#define GdiCharsetToSci(charset) ((int)(charset))
 UINT CodePageFromCharSet(const UINT uCharSet);
-UINT CharSetFromCodePage(const UINT uCodePage);
+//~UINT CharSetFromCodePage(const UINT uCodePage);
 
 
 //==== UnSlash Functions ======================================================
 
-size_t SlashA(LPSTR pchOutput, size_t cchOutLen, LPCSTR pchInput);
-size_t SlashW(LPWSTR pchOutput, size_t cchOutLen, LPCWSTR pchInput);
-
 size_t UnSlashA(LPSTR pchInOut, UINT cpEdit);
-size_t UnSlashW(LPWSTR pchInOut);
+size_t UnSlashChar(LPWSTR pchInOut, WCHAR wch);
 
-void TransformBackslashes(char* pszInput, bool, UINT cpEdit, int* iReplaceMsg);
-void TransformMetaChars(char* pszInput, bool, int iEOLMode);
+size_t SlashCtrlW(LPWSTR pchOutput, size_t cchOutLen, LPCWSTR pchInput);
+size_t UnSlashCtrlW(LPWSTR pchInOut);
+
+void TransformBackslashes(char *pszInput, bool bRegEx, UINT cpEdit, int *iReplaceMsg);
+void TransformMetaChars(char *pszInput, bool bRegEx, int iEOLMode);
 
 
 //==== Large Text Conversion ==================================================
@@ -380,6 +368,13 @@ __inline ptrdiff_t MultiByteToWideCharEx(
 }
 
 #endif 
+
+// ============================================================================
+
+inline int32_t bitmask32_n(unsigned short n)
+{
+  return ((n >= 32) ? 0 - ((int32_t)1) : (((int32_t)1) << n) - 1);
+}
 
 // ============================================================================
 
@@ -468,10 +463,10 @@ bool StrDelChrA(LPSTR pszSource, LPCSTR pCharsToRemove);
 //}
 
 inline size_t StringCchLenA(LPCSTR s, size_t n) {
-  n = (n ? n : STRSAFE_MAX_CCH); return strnlen_s(s, n);
+  n = (n ? n : STRSAFE_MAX_CCH); return (s ? strnlen_s(s, n) : 0LL);
 }
 inline size_t StringCchLenW(LPCWSTR s, size_t n) {
-  n = (n ? n : STRSAFE_MAX_CCH); return wcsnlen_s(s, n);
+  n = (n ? n : STRSAFE_MAX_CCH); return (s ? wcsnlen_s(s, n) : 0LL);
 }
 
 #if defined(UNICODE) || defined(_UNICODE)  
@@ -483,10 +478,12 @@ inline size_t StringCchLenW(LPCWSTR s, size_t n) {
 // ----------------------------------------------------------------------------
 
 inline char* StrEndA(const char* pStart, size_t siz) {
+  // cppcheck-suppress cert-EXP05-C   // Attempt to cast away const - Intended(!)
   return (char*)(pStart + StringCchLenA(pStart, siz));
 }
 
 inline WCHAR* StrEndW(const WCHAR* pStart, size_t siz) {
+  // cppcheck-suppress cert-EXP05-C   // Attempt to cast away const - Intended(!)
   return (WCHAR*)(pStart + StringCchLenW(pStart, siz));
 }
 
@@ -567,7 +564,8 @@ void UrlEscapeEx(LPCWSTR lpURL, LPWSTR lpEscaped, DWORD* pcchEscaped, bool bEscR
 void UrlUnescapeEx(LPWSTR lpURL, LPWSTR lpUnescaped, DWORD* pcchUnescaped);
 
 int ReadStrgsFromCSV(LPCWSTR wchCSVStrg, prefix_t sMatrix[], int iCount, int iLen, LPCWSTR sDefault);
-int ReadVectorFromString(LPCWSTR wchStrg, int iVector[], int iCount, int iMin, int iMax, int iDefault);
+size_t ReadVectorFromString(LPCWSTR wchStrg, int iVector[], size_t iCount, int iMin, int iMax, int iDefault, bool ordered);
+size_t NormalizeColumnVector(LPSTR chStrg_in, LPWSTR wchStrg_out, size_t iCount);
 
 inline bool Char2IntW(LPCWSTR str, int* value) {
   LPWSTR end;
@@ -577,7 +575,12 @@ inline bool Char2IntW(LPCWSTR str, int* value) {
 bool Char2FloatW(WCHAR* wnumber, float* fresult);
 void Float2String(float fValue, LPWSTR lpszStrg, int cchSize);
 
+#define MAX_ESCAPE_HEX_DIGIT 4
+int Hex2Char(char* ch, int cnt);
+
 // ----------------------------------------------------------------------------
+
+inline bool PathIsExistingFile(LPCWSTR pszPath) { return (PathFileExists(pszPath) && !PathIsDirectory(pszPath)); }
 
 // including <pathcch.h> and linking against pathcch.lib
 // api-ms-win-core-path-l1-1-0.dll  library : Minimum supported client is Windows 8 :-/
@@ -586,6 +589,14 @@ inline HRESULT PathCchAppend(PWSTR p,size_t l,PCWSTR a)          { UNUSED(l); re
 inline HRESULT PathCchCanonicalize(PWSTR p,size_t l,PCWSTR a)    { UNUSED(l); return (PathCanonicalize(p,a) ? S_OK : E_FAIL); }
 inline HRESULT PathCchRenameExtension(PWSTR p,size_t l,PCWSTR a) { UNUSED(l); return (PathRenameExtension(p,a) ? S_OK : E_FAIL); }
 inline HRESULT PathCchRemoveFileSpec(PWSTR p,size_t l)           { UNUSED(l); return (PathRemoveFileSpec(p) ? S_OK : E_FAIL); }
+
+inline bool IsReadOnly(const DWORD dwFileAttr) {
+  return ((dwFileAttr != INVALID_FILE_ATTRIBUTES) && (dwFileAttr & FILE_ATTRIBUTE_READONLY));
+}
+
+inline int PointSizeToFontHeight(const float fPtHeight, const HDC hdc) {
+  return -MulDiv(float2int(fPtHeight * 100.0f), GetDeviceCaps(hdc, LOGPIXELSY), 7200);
+}
 
 // ----------------------------------------------------------------------------
 
